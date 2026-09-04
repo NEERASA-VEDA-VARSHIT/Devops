@@ -16,37 +16,37 @@ Created 3 containers on 3 separate Docker networks:
 | Container | Image | Network(s) |
 |-----------|-------|------------|
 | **frontend** | `nginx:alpine` | frontend-net |
-| **backend** | `alpine:latest` | backend-net, db-net |
-| **database** | `mysql:8.0` | db-net |
+| **backend** | `alpine:latest` | backend-db-net, backend-isolated-net |
+| **database** | `mysql:8.0` | backend-db-net |
 
 ### Docker Networks Created
 
 ```bash
 docker network create frontend-net
-docker network create backend-net
-docker network create db-net
+docker network create backend-db-net
+docker network create backend-isolated-net
 ```
 
 ### Backend on 2 Networks
 
-The backend container was started on both `backend-net` and `db-net`:
+The backend container was started on both `backend-db-net` and `backend-isolated-net`:
 
 ```bash
-docker run -d --name backend --network backend-net --network db-net alpine:latest
+docker run -d --name backend --network backend-db-net --network backend-isolated-net alpine:latest
 ```
 
 ### Network Verification
 
 **Backend interfaces:**
-- `eth0` → 172.19.0.2/16 (backend-net)
-- `eth1` → 172.20.0.3/16 (db-net)
+- `eth0` → 172.20.0.2/16 (backend-db-net)
+- `eth1` → 172.21.0.2/16 (backend-isolated-net)
 
 **Connectivity verification:**
 
 ```bash
 $ docker exec backend ping -c 1 database
-PING database (172.20.0.2): 56 data bytes
-64 bytes from 172.20.0.2: seq=0 ttl=64 time=0.107 ms
+PING database (172.21.0.2): 56 data bytes
+64 bytes from 172.21.0.2: seq=0 ttl=64 time=1.475 ms
 
 --- database ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
@@ -57,28 +57,30 @@ DNS resolution works via Docker's embedded DNS (`127.0.0.11`):
 Server:         127.0.0.11
 Address:        127.0.0.11:53
 Name:           database
-Address:        172.20.0.2
+Address:        172.21.0.2
 ```
 
 ### docker ps Output
 
 ```
 CONTAINER ID   IMAGE               PORTS                                    STATUS
-frontend       nginx:alpine        80/tcp                                   Up 5 minutes
-backend        alpine:latest                                                     Up 5 minutes
-database       mysql:8.0           3306/tcp, 33060/tcp                     Up 5 minutes
+frontend       nginx:alpine        80/tcp                                   Up 3 minutes
+backend        alpine:latest                                                     Up 3 minutes
+database       mysql:8.0           3306/tcp, 33060/tcp                     Up 3 minutes
 ```
 
 ### Network List
 
 ```
-NAME           DRIVER
-backend-net    bridge
-db-net         bridge
-frontend-net   bridge
-bridge         bridge
-host           host
-none           null
+NAME                DRIVER
+backend-db-net      bridge
+backend-isolated-net bridge
+backend-net         bridge
+db-net              bridge
+frontend-net        bridge
+bridge              bridge
+host                host
+none                null
 ```
 
 ---
@@ -91,7 +93,7 @@ Pulled `httpd:2.4` image and created an Apache container using host network mode
 
 ```bash
 docker pull httpd:2.4
-docker run -d --name apache-host-net --network host httpd:2.4
+docker run -d --name apache-host --network host httpd:2.4
 ```
 
 ### Access Apache on Port 80
@@ -110,7 +112,7 @@ $ curl http://localhost:80
 ### Verification via `docker inspect`
 
 ```bash
-$ docker inspect --format '{{.HostConfig.NetworkMode}}' apache-host-net
+$ docker inspect --format '{{.HostConfig.NetworkMode}}' apache-host
 host
 ```
 
@@ -163,11 +165,13 @@ echo "Hello students - Updated!" > bind-mount/index.html
 Hello students - Updated!
 ```
 
+The changes are reflected in real-time because the file is bind-mounted from the host filesystem.
+
 ### docker ps Verification
 
 ```
 CONTAINER ID   IMAGE        PORTS              STATUS
-bind-nginx     nginx:alpine   0.0.0.0:8085->80/tcp   Up 5 minutes
+bind-nginx     nginx:alpine   0.0.0.0:8085->80/tcp   Up X seconds
 ```
 
 ---
@@ -237,6 +241,7 @@ A Docker **overlay network** enables containers running on **different Docker ho
 ✅ **Apache** — `apache-hello` (8082) and `apache-host` (80) containers
 ✅ **Nginx** — `nginx-hello`, `bind-nginx`, `frontend` containers
 ✅ **React** — `react-hello` app running on port 3001
+✅ **Multi-Stage** — `multi-stage-hello` app running on port 8080
 
 ---
 
@@ -244,19 +249,18 @@ A Docker **overlay network** enables containers running on **different Docker ho
 
 ```
 CONTAINER ID   IMAGE               PORTS                                    STATUS
-apache-host    httpd:2.4           0.0.0.0:80->80/tcp                       Up 3 minutes
-apache-host    httpd:2.4           host                                     Up 3 minutes
-bind-nginx     nginx:alpine        0.0.0.0:8085->80/tcp                     Up 5 minutes
-frontend       nginx:alpine        80/tcp                                   Up 5 minutes
-backend        alpine:latest                                                     Up 5 minutes
-database       mysql:8.0           3306/tcp, 33060/tcp                     Up 5 minutes
-multi-stage-test multi-stage-hello 0.0.0.0:8080->80/tcp                   Up 8 minutes
-nodejs-test    nodejs-hello        0.0.0.0:3000->3000/tcp                 Up 12 minutes
-python-test    python-hello        0.0.0.0:5000->5000/tcp                 Up 12 minutes
-java-test      java-hello          0.0.0.0:8081->8080/tcp                 Up 8 minutes
-apache-test    apache-hello        0.0.0.0:8082->80/tcp                   Up 12 minutes
-nginx-test     nginx-hello         0.0.0.0:8083->80/tcp                   Up 12 minutes
-react-test     react-hello         0.0.0.0:3001->80/tcp                   Up 12 minutes
+frontend       nginx:alpine        80/tcp                                   Up 3 minutes
+backend        alpine:latest                                                     Up 3 minutes
+database       mysql:8.0           3306/tcp, 33060/tcp                     Up 3 minutes
+multi-stage-test multi-stage-hello 0.0.0.0:8080->8080/tcp               Up 12 minutes
+java-test      java-hello          0.0.0.0:8081->8080/tcp                 Up 22 minutes
+apache-host    httpd:2.4           0.0.0.0:80->80/tcp                     Up 26 minutes
+bind-nginx     nginx:alpine        0.0.0.0:8085->80/tcp                   Up 27 minutes
+react-test     react-hello         0.0.0.0:3001->80/tcp                   Up 35 minutes
+nginx-test     nginx-hello         0.0.0.0:8083->80/tcp                   Up 35 minutes
+apache-test    apache-hello        0.0.0.0:8082->80/tcp                   Up 35 minutes
+python-test    python-hello        0.0.0.0:5000->5000/tcp                 Up 35 minutes
+nodejs-test    nodejs-hello        0.0.0.0:3000->3000/tcp                 Up 35 minutes
 ```
 
 ---
@@ -268,31 +272,33 @@ react-test     react-hello         0.0.0.0:3001->80/tcp                   Up 12 
 ```bash
 $ docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}"
 NAMES              IMAGE               PORTS                                         STATUS
-apache-host        httpd:2.4           0.0.0.0:80->80/tcp, [::]:80->80/tcp       Up 3 minutes
-bind-nginx         nginx:alpine        0.0.0.0:8085->80/tcp, [::]:8085->80/tcp   Up 5 minutes
-frontend           nginx:alpine        80/tcp                                        Up 5 minutes
-backend            alpine:latest                                                     Up 5 minutes
-database           mysql:8.0           3306/tcp, 33060/tcp                         Up 5 minutes
-multi-stage-test   multi-stage-hello   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   Up 8 minutes
-nodejs-test        nodejs-hello        0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp Up 12 minutes
-python-test        python-hello        0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp Up 12 minutes
-java-test          java-hello          0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp Up 8 minutes
-apache-test        apache-hello        0.0.0.0:8082->80/tcp, [::]:8082->80/tcp   Up 12 minutes
-nginx-test         nginx-hello         0.0.0.0:8083->80/tcp, [::]:8083->80/tcp   Up 12 minutes
-react-test         react-hello         0.0.0.0:3001->80/tcp, [::]:3001->80/tcp   Up 12 minutes
+frontend           nginx:alpine        80/tcp                                        Up 3 minutes
+backend            alpine:latest                                                     Up 3 minutes
+database           mysql:8.0           3306/tcp, 33060/tcp                           Up 3 minutes
+multi-stage-test   multi-stage-hello   0.0.0.0:8080->8080/tcp                     Up 12 minutes
+java-test          java-hello          0.0.0.0:8081->8080/tcp                     Up 22 minutes
+apache-host        httpd:2.4           0.0.0.0:80->80/tcp                           Up 26 minutes
+bind-nginx         nginx:alpine        0.0.0.0:8085->80/tcp                         Up 27 minutes
+react-test         react-hello         0.0.0.0:3001->80/tcp                         Up 35 minutes
+nginx-test         nginx-hello         0.0.0.0:8083->80/tcp                         Up 35 minutes
+apache-test        apache-hello        0.0.0.0:8082->80/tcp                         Up 35 minutes
+python-test        python-hello        0.0.0.0:5000->5000/tcp                       Up 35 minutes
+nodejs-test        nodejs-hello        0.0.0.0:3000->3000/tcp                       Up 35 minutes
 ```
 
 ### Network List Output
 
 ```bash
 $ docker network ls --format "table {{.Name}}\t{{.Driver}}"
-NAME           DRIVER
-backend-net    bridge
-bridge         bridge
-db-net         bridge
-frontend-net   bridge
-host           host
-none           null
+NAME                DRIVER
+backend-db-net      bridge
+backend-isolated-net bridge
+backend-net         bridge
+db-net              bridge
+frontend-net        bridge
+bridge              bridge
+host                host
+none                null
 ```
 
 ### Hello World Application Outputs
@@ -317,7 +323,7 @@ $ curl http://localhost:3001
 <!DOCTYPE html><html lang="en">...Hello World from React...</html>
 
 $ curl http://localhost:8080
-<!DOCTYPE html><html><head><title>Multi-Stage</title></head><body><h1>Hello World from Docker multi-stage build</h1></body></html>
+<h1>Hello World from Docker Multi-Stage Build!</h1>
 
 $ curl http://localhost:80
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -334,17 +340,28 @@ Hello students - Updated!
 
 ```bash
 $ docker exec backend ping -c 1 database
-PING database (172.20.0.2): 56 data bytes
-64 bytes from 172.20.0.2: seq=0 ttl=64 time=0.107 ms
+PING database (172.21.0.2): 56 data bytes
+64 bytes from 172.21.0.2: seq=0 ttl=64 time=1.475 ms
 
 --- database ping statistics ---
 1 packets transmitted, 1 packets received, 0% packet loss
 ```
 
+### Backend on 2 Networks Verification
+
+```bash
+$ docker inspect backend --format "NetworkMode: {{.HostConfig.NetworkMode}}"
+NetworkMode: backend-db-net
+
+$ docker inspect backend 2>&1 | Select-String "backend-db-net\|backend-isolated-net"
+"backend-db-net": { ... }
+"backend-isolated-net": { ... }
+```
+
 ### Host Network Verification
 
 ```bash
-$ docker inspect --format '{{.HostConfig.NetworkMode}}' apache-host-net
+$ docker inspect --format '{{.HostConfig.NetworkMode}}' apache-host
 host
 ```
 
@@ -362,21 +379,21 @@ Hello students - Updated!
 
 ```bash
 $ docker build -t multi-stage-hello ./multi-stage-app
-[+] Building 0.2s ...
- => [builder 1/4] FROM docker.io/library/node:18-alpine
- => [stage-1 1/2] FROM docker.io/library/nginx:alpine
- => [builder 4/4] RUN node build.js
-                    Build artifact generated.
- => [stage-1 2/2] COPY --from=builder /tmp/index.html /usr/share/nginx/html/index.html
+[+] Building ...
+ => [builder 1/5] FROM docker.io/library/node:24-alpine
+ => [builder 4/5] RUN npm install
+ => [production 1/5] FROM docker.io/library/node:24-alpine
+ => [production 4/5] RUN npm install --omit=dev
+ => [production 5/5] COPY --from=builder /app/server.js ./
  => naming to docker.io/library/multi-stage-hello:latest
 
-$ docker run -d --name multi-stage-test -p 8080:80 multi-stage-hello
+$ docker run -d --name multi-stage-test -p 8080:8080 multi-stage-hello
 $ docker ps
 CONTAINER ID   IMAGE               PORTS                                    STATUS
-multi-stage-test multi-stage-hello   0.0.0.0:8080->80/tcp                   Up 8 minutes
+multi-stage-test multi-stage-hello   0.0.0.0:8080->8080/tcp               Up 12 minutes
 
 $ curl http://localhost:8080
-<!DOCTYPE html><html><head><title>Multi-Stage</title></head><body><h1>Hello World from Docker multi-stage build</h1></body></html>
+<h1>Hello World from Docker Multi-Stage Build!</h1>
 ```
 
 ---
@@ -386,20 +403,22 @@ $ curl http://localhost:8080
 ### Task 1: Networking
 ```bash
 docker network create frontend-net
-docker network create backend-net
-docker network create db-net
+docker network create backend-db-net
+docker network create backend-isolated-net
 docker run -d --name frontend --network frontend-net nginx:alpine
-docker run -d --name backend --network backend-net --network db-net alpine:latest
-docker run -d --name database --network db-net -e MYSQL_ROOT_PASSWORD=rootpass -e MYSQL_DATABASE=appdb mysql:8.0
+docker run -d --name backend --network backend-db-net --network backend-isolated-net alpine:latest
+docker run -d --name database --network backend-db-net -e MYSQL_ROOT_PASSWORD=root123 -e MYSQL_DATABASE=studentdb mysql:8
 docker exec backend ping -c 1 database
-docker network inspect backend-net
+docker network inspect backend-db-net
+docker network inspect backend-isolated-net
+docker network inspect frontend-net
 ```
 
 ### Task 2: Host Network
 ```bash
 docker pull httpd:2.4
-docker run -d --name apache-host-net --network host httpd:2.4
-docker inspect --format '{{.HostConfig.NetworkMode}}' apache-host-net
+docker run -d --name apache-host --network host httpd:2.4
+docker inspect --format '{{.HostConfig.NetworkMode}}' apache-host
 ```
 
 ### Task 3: Bind Mount
@@ -421,5 +440,5 @@ docker network create --driver overlay my-overlay-net
 ### Multi-Stage Build
 ```bash
 docker build -t multi-stage-hello ./multi-stage-app
-docker run -d --name multi-stage-test -p 8080:80 multi-stage-hello
+docker run -d --name multi-stage-test -p 8080:8080 multi-stage-hello
 ```
