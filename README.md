@@ -66,8 +66,8 @@ The following Docker images were built as part of this homework:
 |-------|------|--------|
 | nodejs-hello | 3000 | ✅ Running |
 | python-hello | 5000 | ✅ Running |
-| java-hello | 8080 | ✅ Running |
-| apache-hello | 80 | ✅ Running |
-| nginx-hello | 80 | ✅ Running |
-| react-hello | 80 | ✅ Running |
+| java-hello | 8081 | ⏸ Stopped |
+| apache-hello | 8082 | ✅ Running |
+| nginx-hello | 8083 | ✅ Running |
+| react-hello | 3001 | ✅ Running |
 | multi-stage-hello | 8080 | ✅ Running |
