@@ -442,3 +442,7 @@ docker network create --driver overlay my-overlay-net
 docker build -t multi-stage-hello ./multi-stage-app
 docker run -d --name multi-stage-test -p 8080:8080 multi-stage-hello
 ```
+
+![alt text](image-2.png)
+![alt text](image.png)
+![alt text](image-1.png)
