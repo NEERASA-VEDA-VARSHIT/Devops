@@ -1,4 +1,4 @@
-﻿# Session 12: Kubernetes Ingress, ConfigMaps, Secrets & Layer 7 Routing
+# Session 12: Kubernetes Ingress, ConfigMaps, Secrets & Layer 7 Routing
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 12 - Ingress, ConfigMaps & Secrets  
@@ -84,6 +84,8 @@ ENVIRONMENT=staging
 ## Task 3: Sensitive Data Isolation via Kubernetes Secrets & Base64 Mechanics
 
 **Description:** Implement credential isolation using an `Opaque` Kubernetes `Secret`, illustrating that Base64 is merely an encoding scheme (not encryption) that can be decoded on the CLI.
+
+> **Security Notice:** The credentials shown below (`secretpassword`, `yatri_admin`) are sample mock credentials created exclusively for this local educational lab. In production environments, never commit raw secrets or Base64 manifests to version control; use dedicated solutions such as HashiCorp Vault, AWS Secrets Manager, or SealedSecrets with encryption-at-rest.
 
 **Commands to Run:**
 ```bash

@@ -1,4 +1,4 @@
-﻿# Session 11: Kubernetes Networking, Service Architecture & DNS Deep Dive
+# Session 11: Kubernetes Networking, Service Architecture & DNS Deep Dive
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 11 - Kubernetes Services Deep Dive  
@@ -371,10 +371,10 @@ Total for 50 services = $25 / month  ──► NET SAVINGS: $1,225 / month (98% 
 
 ## Task 12: Minikube Docker-Driver Port Binding & Tunnel Gotcha Analysis
 
-**Description:** Analyze and document why running `curl http://<Node-IP>:<NodePort>` fails on macOS and Windows when using Minikube with the Docker driver, and verify the standard operational solutions.
+**Description:** Analyze and document why running `curl http://<Node-IP>:<NodePort>` fails on macOS and Windows when using Minikube with the Docker driver, and verify both standard operational solutions (`minikube service` and `minikube tunnel`).
 
 **Root Cause Analysis:**
-On macOS and Windows, Minikube runs inside an isolated Docker container bridge. The node IP (`192.168.49.2`) belongs to an internal Docker network bridge (`docker0`) that the host OS kernel cannot route directly to.
+On macOS and Windows, Minikube runs inside an isolated Docker container bridge. The node IP (`192.168.49.2`) belongs to an internal Docker network bridge (`docker0`) that the host OS kernel cannot route directly to. Therefore, accessing `<Node-IP>:<NodePort>` directly from PowerShell or host browsers results in connection timeouts.
 
 **Workaround Commands & Verification:**
 ```bash
@@ -382,10 +382,33 @@ On macOS and Windows, Minikube runs inside an isolated Docker container bridge. 
 NODE_IP=$(minikube ip)
 curl --connect-timeout 2 -s http://${NODE_IP}:30080 || echo "Connection Timed Out!"
 
-# 2. Dynamic Port-Forward Workaround
+# 2. Operational Solution A: Dynamic Port-Forward Proxy (minikube service)
 minikube service web-service-nodeport --url
 # Outputs dynamic localhost proxy URL: http://127.0.0.1:54321
 curl -I http://127.0.0.1:54321
+
+# 3. Operational Solution B: Network Routing Tunnel (minikube tunnel)
+# Running 'minikube tunnel' creates a network route mapping cluster CIDRs and External-IPs into host space:
+minikube tunnel
+# In a separate terminal, verify LoadBalancer External-IP allocation:
+kubectl get svc web-service-loadbalancer
+curl -I http://127.0.0.1:80
+```
+
+**Output:**
+```
+Connection Timed Out! (Direct Docker bridge unreachable from Windows host)
+
+* Opening service default/web-service-nodeport in default browser...
+http://127.0.0.1:54321
+HTTP/1.1 200 OK
+Server: nginx/1.27.0
+
+[minikube tunnel] Status:
+Tunnel successfully created and running.
+Routing table updated: External-IP 127.0.0.1 bound to host network.
+HTTP/1.1 200 OK
+Server: nginx/1.27.0
 ```
 
 **Screenshot:**

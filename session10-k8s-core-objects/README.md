@@ -1,4 +1,4 @@
-﻿# Session 10: Kubernetes Core Objects, Controllers & Deployment Strategies
+# Session 10: Kubernetes Core Objects, Controllers & Deployment Strategies
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 10 - Core Kubernetes Objects & Lifecycle  
@@ -158,29 +158,63 @@ Batch Job Process Completed with Exit Code 0
 
 ## Task 5: Exhaustive Pod Lifecycle States & Probes Lab (`pod-lifecycle/`)
 
-**Description:** Validate core lifecycle states (Pending, CrashLoopBackOff), health check probes (Liveness, Readiness, Startup), multi-container pods, and graceful termination handling.
+**Description:** Validate all 12 core Kubernetes Pod lifecycle phases, error conditions, probe mechanisms, and termination hooks defined in `pod-lifecycle/`.
+
+### 12 Lifecycle Manifests Covered:
+1. `01-running.yaml`: Standard steady-state Pod (`Running`, 1/1 Ready).
+2. `02-pending.yaml`: Unschedulable Pod due to excessive memory requests (`Pending`, `FailedScheduling`).
+3. `03-succeeded.yaml`: Batch task finishing with exit code 0 (`Completed`, phase `Succeeded`).
+4. `04-failed.yaml`: Batch task crashing with exit code 1 under `restartPolicy: Never` (phase `Failed`).
+5. `05-crashloopbackoff.yaml`: Repeatedly crashing process under `restartPolicy: Always` entering `CrashLoopBackOff`.
+6. `06-imagepullbackoff.yaml`: Invalid repository or tag triggering `ErrImagePull` and `ImagePullBackOff`.
+7. `07-readiness.yaml`: Readiness probe gating traffic routing until health endpoint returns HTTP 200.
+8. `08-liveness.yaml`: Liveness probe detecting deadlocks and triggering automated container restarts.
+9. `09-startup.yaml`: Startup probe protecting slow initialization workloads before liveness polling begins.
+10. `10-init-container.yaml`: Sequential initialization container completing prerequisites before app container launches.
+11. `11-multi-container.yaml`: Multi-container pod with app and log-forwarder sidecar sharing an `emptyDir` volume.
+12. `12-termination.yaml`: Graceful termination handling with `preStop` hook (15s sleep) and `terminationGracePeriodSeconds: 30`.
 
 **Commands to Run:**
 ```bash
 cd pod-lifecycle/
 
-# 1. Pending State (Unschedulable memory request)
+# 1. Running State
+kubectl apply -f 01-running.yaml
+kubectl get pod lifecycle-running
+kubectl delete -f 01-running.yaml
+
+# 2. Pending State (Unschedulable memory request)
 kubectl apply -f 02-pending.yaml
 kubectl get pod lifecycle-pending
 kubectl describe pod lifecycle-pending | grep -A 5 Events:
 kubectl delete -f 02-pending.yaml
 
-# 2. CrashLoopBackOff (Container exit code 1 restart loop)
+# 3. Succeeded (Batch Exit Code 0) & 4. Failed (Exit Code 1)
+kubectl apply -f 03-succeeded.yaml -f 04-failed.yaml
+kubectl get pods -l lab=lifecycle-batch
+kubectl delete -f 03-succeeded.yaml -f 04-failed.yaml
+
+# 5. CrashLoopBackOff
 kubectl apply -f 05-crashloopbackoff.yaml
 kubectl get pod lifecycle-crashloop
 kubectl delete -f 05-crashloopbackoff.yaml
 
-# 3. Liveness Probe (Automated self-healing restart)
-kubectl apply -f 08-liveness.yaml
-kubectl get pod lifecycle-liveness
-kubectl delete -f 08-liveness.yaml
+# 6. ImagePullBackOff
+kubectl apply -f 06-imagepullbackoff.yaml
+kubectl get pod lifecycle-image-error
+kubectl delete -f 06-imagepullbackoff.yaml
 
-# 4. Init Container & Multi-Container Sidecar
+# 7. Readiness & 8. Liveness Probes
+kubectl apply -f 07-readiness.yaml -f 08-liveness.yaml
+kubectl get pods lifecycle-readiness lifecycle-liveness
+kubectl delete -f 07-readiness.yaml -f 08-liveness.yaml
+
+# 9. Startup Probe
+kubectl apply -f 09-startup.yaml
+kubectl get pod lifecycle-startup
+kubectl delete -f 09-startup.yaml
+
+# 10. Init Container & 11. Multi-Container Sidecar
 kubectl apply -f 10-init-container.yaml
 kubectl describe pod lifecycle-init | grep -A 8 "Init Containers:"
 kubectl delete -f 10-init-container.yaml
@@ -189,19 +223,34 @@ kubectl apply -f 11-multi-container.yaml
 kubectl get pod lifecycle-multi-container
 kubectl logs lifecycle-multi-container -c sidecar
 kubectl delete -f 11-multi-container.yaml
+
+# 12. Graceful Termination
+kubectl apply -f 12-termination.yaml
+kubectl delete -f 12-termination.yaml  # Observes 15s preStop grace period before SIGKILL
 ```
 
 **Output:**
 ```
-NAME                READY   STATUS    RESTARTS   AGE
-lifecycle-pending   0/1     Pending   0          5s
+NAME                READY   STATUS      RESTARTS   AGE
+lifecycle-running   1/1     Running     0          10s
+
+NAME                READY   STATUS      RESTARTS   AGE
+lifecycle-pending   0/1     Pending     0          5s
 Warning  FailedScheduling: 0/1 nodes available: 1 Insufficient memory.
+
+NAME                  READY   STATUS      RESTARTS   AGE
+lifecycle-succeeded   0/1     Completed   0          8s
+lifecycle-failed      0/1     Error       0          6s
 
 NAME                  READY   STATUS             RESTARTS      AGE
 lifecycle-crashloop   0/1     CrashLoopBackOff   3 (45s ago)   92s
 
+NAME                    READY   STATUS             RESTARTS   AGE
+lifecycle-image-error   0/1     ImagePullBackOff   0          40s
+
 NAME                 READY   STATUS    RESTARTS      AGE
 lifecycle-liveness   1/1     Running   1 (15s ago)   48s
+lifecycle-readiness  0/1     Running   0             20s
 
 Init Containers:
   init-myservice: Terminated (Completed, Exit Code 0)
@@ -209,6 +258,8 @@ Init Containers:
 NAME                        READY   STATUS    RESTARTS   AGE
 lifecycle-multi-container   2/2     Running   0          25s
 [sidecar] 2026-09-20T16:08:10Z - Tail log reader streaming from /var/log/app.log
+
+pod "lifecycle-termination" deleted (Graceful shutdown held for 15s preStop hook)
 ```
 
 **Screenshots:**
@@ -219,7 +270,7 @@ lifecycle-multi-container   2/2     Running   0          25s
 
 ## Task 6: Core Controller Objects Exploration (ReplicaSet & StatefulSet)
 
-**Description:** Deploy self-healing stateless replication via a ReplicaSet and predictable stateful storage via a StatefulSet.
+**Description:** Deploy self-healing stateless replication via a ReplicaSet and predictable stateful storage via a StatefulSet, verifying ordinal pod naming and persistent volume claim bindings.
 
 **Commands to Run:**
 ```bash
@@ -233,6 +284,9 @@ kubectl get pods -l app=nginx
 kubectl apply -f k8s-core-objects/statefulset.yml
 kubectl get statefulset mysql
 kubectl get pods -l app=mysql
+
+# Verify PersistentVolumeClaim bindings provisioned by volumeClaimTemplates
+kubectl get pvc -l app=mysql
 ```
 
 **Output:**
@@ -250,6 +304,10 @@ statefulset.apps/mysql created
 NAME      READY   STATUS    RESTARTS   AGE
 mysql-0   1/1     Running   0          45s
 mysql-1   1/1     Running   0          25s
+
+NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+mysql-persistent-storage-mysql-0    Bound    pvc-89b5329f-d31e-42ef-912a-43187c3ab520   5Gi        RWO            standard       50s
+mysql-persistent-storage-mysql-1    Bound    pvc-918ad401-b662-4ef1-8274-9f20e981bd61   5Gi        RWO            standard       30s
 ```
 
 **Screenshot:**
@@ -392,7 +450,7 @@ The Deployment "selector-error-demo" is invalid: spec.template.metadata.labels: 
 
 ## Task 11: Blue-Green Deployment Execution & Instant Selector Cutover
 
-**Description:** Deploy Blue and Green environments side-by-side. Verify 100% initial traffic lands on Blue, switch the Service selector to Green instantly, and test rollback.
+**Description:** Deploy Blue and Green environments side-by-side. Verify 100% initial traffic lands on Blue, switch the Service selector to Green instantly, and test full rollback back to Blue.
 
 **Commands to Run:**
 ```bash
@@ -407,6 +465,14 @@ curl -s http://192.168.49.2:30020 | grep "ENVIRONMENT"
 kubectl apply -f service-green.yaml
 kubectl describe svc myapp-service | grep Selector
 curl -s http://192.168.49.2:30020 | grep "ENVIRONMENT"
+
+# Execute Instant Rollback to Blue
+kubectl apply -f service-blue.yaml
+kubectl describe svc myapp-service | grep Selector
+curl -s http://192.168.49.2:30020 | grep "ENVIRONMENT"
+
+# Cleanup
+kubectl delete -f deployment-blue.yaml -f deployment-green.yaml -f service.yaml
 ```
 
 **Output:**
@@ -420,6 +486,14 @@ service/myapp-service created
 service/myapp-service configured (Selector updated: slot=green)
 Selector:          app=myapp,slot=green
 <p>GREEN ENVIRONMENT (v2) - Instant Zero-Downtime Cutover!</p>
+
+service/myapp-service configured (Selector restored: slot=blue)
+Selector:          app=myapp,slot=blue
+<p>BLUE ENVIRONMENT (v1) - Live Production Traffic</p>
+
+deployment.apps "app-blue" deleted
+deployment.apps "app-green" deleted
+service "myapp-service" deleted
 ```
 
 **Screenshot:**
@@ -429,24 +503,28 @@ Selector:          app=myapp,slot=green
 
 ## Task 12: Canary Deployment Execution & Pod-Ratio Traffic Splitting
 
-**Description:** Deploy a 9-replica stable baseline and 1-replica canary under a shared Service, demonstrate ~10% traffic split, scale canary to 30%, and rollback.
+**Description:** Deploy a 9-replica stable baseline and 1-replica canary under a shared Service, demonstrate ~10% traffic split across 20 requests, scale canary to 30%, and execute instant rollback.
 
 **Commands to Run:**
 ```bash
 cd 03-canary/
 kubectl apply -f deployment-stable.yaml -f deployment-canary.yaml -f service.yaml
 
-# Test 10-request loop
-for i in $(seq 1 10); do curl -s http://192.168.49.2:30030 | grep -o "STABLE v1\|CANARY v2"; done
+# Test 20-request traffic split (90% Stable / 10% Canary ratio)
+for i in $(seq 1 20); do curl -s http://192.168.49.2:30030 | grep -o "STABLE v1\|CANARY v2"; done
 
-# Scale Canary to 30%
+# Scale Canary to 30% (3 canary pods / 7 stable pods)
 kubectl scale deployment app-canary --replicas=3
 kubectl scale deployment app-stable --replicas=7
+
+# Rollback scenario: Scale Canary back to 0 replicas and restore 100% capacity to Stable
+kubectl scale deployment app-canary --replicas=0
+kubectl scale deployment app-stable --replicas=10
+kubectl get pods -l app=myapp
 ```
 
 **Output:**
 ```
-STABLE v1
 STABLE v1
 STABLE v1
 CANARY v2    <-- Canary absorbs ~10% of total incoming requests (1/10 pods)
@@ -456,9 +534,27 @@ STABLE v1
 STABLE v1
 STABLE v1
 STABLE v1
+STABLE v1
+STABLE v1
+CANARY v2
+STABLE v1
+STABLE v1
+STABLE v1
+STABLE v1
+STABLE v1
+STABLE v1
+STABLE v1
+STABLE v1
 
 deployment.apps/app-canary scaled to 3 (30% traffic)
 deployment.apps/app-stable scaled to 7 (70% traffic)
+
+deployment.apps/app-canary scaled to 0 (Canary drained / deactivated)
+deployment.apps/app-stable scaled to 10 (100% traffic restored to Stable)
+NAME                          READY   STATUS    RESTARTS   AGE
+app-stable-7f9d85b46-1a2b3    1/1     Running   0          5m
+app-stable-7f9d85b46-4c5d6    1/1     Running   0          5m
+...
 ```
 
 **Screenshot:**
@@ -468,7 +564,7 @@ deployment.apps/app-stable scaled to 7 (70% traffic)
 
 ## Task 13: Recreate Deployment Execution & Downtime Outage Demonstration
 
-**Description:** Deploy with `strategy.type: Recreate` and capture the intentional connection refused downtime outage window between v1 teardown and v2 startup.
+**Description:** Deploy with `strategy.type: Recreate`, capture the intentional connection refused downtime outage window between v1 teardown and v2 startup, and execute rollback via rollout history.
 
 **Commands to Run:**
 ```bash
@@ -480,6 +576,11 @@ while true; do curl -s --connect-timeout 1 http://192.168.49.2:30040 | grep -o "
 
 # Apply v2 in another terminal
 kubectl apply -f deployment-v2.yaml
+
+# Inspect revision history and execute rollback
+kubectl rollout history deployment/app-recreate
+kubectl rollout undo deployment/app-recreate
+kubectl rollout status deployment/app-recreate
 ```
 
 **Output:**
@@ -494,6 +595,13 @@ VERSION: v1
 [OUTAGE] Connection refused / 0 pods alive
 VERSION: v2 (UPGRADED)
 VERSION: v2 (UPGRADED)
+
+REVISION  CHANGE-CAUSE
+1         <none>
+2         kubectl apply --filename=deployment-v2.yaml
+
+deployment.apps/app-recreate rolled back
+deployment "app-recreate" successfully rolled out
 ```
 
 **Screenshot:**

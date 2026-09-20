@@ -175,8 +175,8 @@ See `Git/readme.md` for complete documentation including:
 
 ![Screenshot 1](Git/Screenshot%202026-09-04%20214606.png)
 ![Screenshot 2](Git/Screenshot%202026-09-04%20214614.png)
-![Screenshot 3](Git/Screenshot%2026-09-04%20214626.png)
-![Screenshot 4](Git/Screenshot%2026-09-04%20214632.png)
+![Screenshot 3](Git/Screenshot%202026-09-04%20214626.png)
+![Screenshot 4](Git/Screenshot%202026-09-04%20214632.png)
 
 ---
 
@@ -323,7 +323,7 @@ git cherry-pick <commit-hash>
 ![Git Screenshot 1](Git/Screenshot%202026-09-04%20214606.png)
 ![Git Screenshot 2](Git/Screenshot%202026-09-04%20214614.png)
 ![Git Screenshot 3](Git/Screenshot%202026-09-04%20214626.png)
-![Git Screenshot 4](Git/Screenshot%2026-09-04%20214632.png)
+![Git Screenshot 4](Git/Screenshot%202026-09-04%20214632.png)
 
 ---
 
