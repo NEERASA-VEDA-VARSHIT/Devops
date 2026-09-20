@@ -4,7 +4,7 @@
 **Student Name:** Neerasa Veda Varshit  
 **Enrollment Number:** 24bcs10005  
 **Environment:** Windows 11 Home (ZEROBOOK) / WSL2 Ubuntu 24.04 LTS (`veda@ZEROBOOK`)  
-**Repository:** `devops-heros` / `LinuxFundamentals`
+**Repository:** `NEERASA-VEDA-VARSHIT/Devops` / `LinuxFundamentals`
 
 ---
 

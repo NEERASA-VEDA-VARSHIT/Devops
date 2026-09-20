@@ -1,9 +1,10 @@
-﻿# Docker Fundamentals: Multi-Application Deployment Lab
+# Docker Fundamentals: Multi-Application Deployment Lab
 
-**Author:** Veda Varshit  
-**Enrollment Number:** 24bcs10005  
 **Course:** SST DevOps & Cloud [SWE]  
-**Repository:** devops-heros / DockerFundamentals  
+**Student Name:** Neerasa Veda Varshit  
+**Enrollment Number:** 24bcs10005  
+**Environment:** Windows 11 Home (ZEROBOOK) / Docker Desktop v4.38.0  
+**Repository:** NEERASA-VEDA-VARSHIT/Devops / DockerFundamentals  
 
 ---
 

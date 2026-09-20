@@ -1,8 +1,8 @@
-﻿# Session 9: Kubernetes Fundamentals & Cluster Architecture
+# Session 9: Kubernetes Fundamentals & Cluster Architecture
 
 **Course:** SST DevOps & Cloud [SWE]  
-**Session:** 09 - Kubernetes Fundamentals  
-**Repository:** devops-heros / session9-k8s  
+**Session:** 09 - Kubernetes Fundamentals & Architecture  
+**Repository:** NEERASA-VEDA-VARSHIT/Devops / session9-k8s  
 
 ---
 

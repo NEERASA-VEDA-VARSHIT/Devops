@@ -2,7 +2,7 @@
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 10 - Core Kubernetes Objects & Lifecycle  
-**Repository:** devops-heros / session10-k8s-core-objects  
+**Repository:** NEERASA-VEDA-VARSHIT/Devops / session10-k8s-core-objects  
 
 ---
 

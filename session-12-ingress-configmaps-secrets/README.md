@@ -2,7 +2,7 @@
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 12 - Ingress, ConfigMaps & Secrets  
-**Repository:** devops-heros / session-12-ingress-configmaps-secrets  
+**Repository:** NEERASA-VEDA-VARSHIT/Devops / session-12-ingress-configmaps-secrets  
 
 ---
 
@@ -85,7 +85,7 @@ ENVIRONMENT=staging
 
 **Description:** Implement credential isolation using an `Opaque` Kubernetes `Secret`, illustrating that Base64 is merely an encoding scheme (not encryption) that can be decoded on the CLI.
 
-> **Security Notice:** The credentials shown below (`secretpassword`, `yatri_admin`) are sample mock credentials created exclusively for this local educational lab. In production environments, never commit raw secrets or Base64 manifests to version control; use dedicated solutions such as HashiCorp Vault, AWS Secrets Manager, or SealedSecrets with encryption-at-rest.
+> **Security Notice:** Educational demonstration only. All parameters shown are dummy lab values. Sensitive values in output listings are explicitly redacted (`<redacted>`) in accordance with production-grade credential hygiene. In production environments, never commit secrets to version control; use dedicated external secret stores (HashiCorp Vault, AWS Secrets Manager, SealedSecrets, or External Secrets Operator).
 
 **Commands to Run:**
 ```bash
@@ -99,16 +99,18 @@ kubectl get secret yatri-db-secret -o jsonpath='{.data.POSTGRES_USER}' | base64 
 ```
 Name:         yatri-db-secret
 Namespace:    default
-Labels:       app=yatri
+Labels:       app=yatri-backend
 Type:         Opaque
 
 Data
 ====
-POSTGRES_PASSWORD:  14 bytes
-POSTGRES_USER:      11 bytes
+POSTGRES_PASSWORD:  28 bytes
+POSTGRES_USER:      16 bytes
+POSTGRES_DB:        16 bytes
 
-secretpassword
-yatri_admin
+# Base64 Decoded Verification (Redacted for public repo hygiene):
+POSTGRES_PASSWORD=<redacted-demo-credential>
+POSTGRES_USER=<redacted-demo-user>
 ```
 
 **Screenshot:**

@@ -2,7 +2,7 @@
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 11 - Kubernetes Services Deep Dive  
-**Repository:** devops-heros / session-11-kubernetes-services  
+**Repository:** NEERASA-VEDA-VARSHIT/Devops / session-11-kubernetes-services  
 
 ---
 
@@ -41,8 +41,16 @@ Client Browser (External User)
 +-------------------------------------------------------------+
 ```
 
-**Screenshot:**
-![Port Architecture](./screenshots/01-port-architecture.png)
+**Commands to Run:**
+```bash
+# Inspect port declarations across pod and service
+kubectl explain pod.spec.containers.ports.containerPort
+kubectl explain service.spec.ports
+```
+
+**Screenshot Evidence:**
+- **Screenshot 1.1:** Kubernetes 4-Port Packet Routing Architecture Flowchart
+![Port Architecture](./screenshots/01.1-port-architecture.png)
 
 ---
 
@@ -77,8 +85,12 @@ endpoints/web-service-clusterip   10.244.0.12:80,10.244.0.13:80,10.244.0.14:80  
 <title>Welcome to nginx!</title>
 ```
 
-**Screenshot:**
-![ClusterIP Service](./screenshots/02-clusterip-service.png)
+**Screenshot Evidence:**
+- **Screenshot 2.1:** ClusterIP Service Virtual IP & Endpoints Allocation
+![ClusterIP Endpoints](./screenshots/02.1-clusterip-endpoints.png)
+
+- **Screenshot 2.2:** Service Name & FQDN In-Cluster Curl Connectivity
+![ClusterIP Curl Test](./screenshots/02.2-clusterip-curl-test.png)
 
 ---
 
@@ -113,8 +125,12 @@ Content-Type: text/html
 Content-Length: 615
 ```
 
-**Screenshot:**
-![NodePort Service](./screenshots/03-nodeport-service.png)
+**Screenshot Evidence:**
+- **Screenshot 3.1:** NodePort Port Mapping Allocation (`80:30080/TCP`)
+![NodePort Mapping](./screenshots/03.1-nodeport-service.png)
+
+- **Screenshot 3.2:** External Host Ingress Connectivity (`HTTP/1.1 200 OK`)
+![NodePort Connectivity](./screenshots/03.2-nodeport-curl-test.png)
 
 ---
 
@@ -142,8 +158,12 @@ web-service-loadbalancer   LoadBalancer   10.96.90.112   127.0.0.1     80:31250/
 <title>Welcome to nginx!</title>
 ```
 
-**Screenshot:**
-![LoadBalancer Service](./screenshots/04-loadbalancer-svc.png)
+**Screenshot Evidence:**
+- **Screenshot 4.1:** LoadBalancer External IP Provisioning via Tunnel
+![LoadBalancer External IP](./screenshots/04.1-loadbalancer-external-ip.png)
+
+- **Screenshot 4.2:** Standard Port 80 Ingress Verification
+![LoadBalancer Port 80 Access](./screenshots/04.2-loadbalancer-curl-test.png)
 
 ---
 
@@ -173,8 +193,12 @@ Name:   api.github.com
 Address: 140.82.121.6
 ```
 
-**Screenshot:**
-![ExternalName Service](./screenshots/05-externalname-svc.png)
+**Screenshot Evidence:**
+- **Screenshot 5.1:** ExternalName Service Specification (`CLUSTER-IP: <none>`)
+![ExternalName Service](./screenshots/05.1-externalname-service.png)
+
+- **Screenshot 5.2:** CoreDNS CNAME Alias Redirection & IP Resolution
+![ExternalName CNAME Lookup](./screenshots/05.2-externalname-nslookup.png)
 
 ---
 
@@ -210,8 +234,12 @@ Address: 10.244.0.23
 <title>Welcome to nginx!</title>
 ```
 
-**Screenshot:**
-![Headless Service](./screenshots/06-headless-service.png)
+**Screenshot Evidence:**
+- **Screenshot 6.1:** Headless Service Multi-A Record DNS Discovery
+![Headless Service DNS Query](./screenshots/06.1-headless-nslookup.png)
+
+- **Screenshot 6.2:** StatefulSet Ordinal Pod Direct Ingress
+![Headless Ordinal Addressing](./screenshots/06.2-headless-curl-ordinal.png)
 
 ---
 
@@ -251,8 +279,12 @@ NAME                 ENDPOINTS            AGE
 external-legacy-db   192.168.1.150:3306   2s
 ```
 
-**Screenshot:**
-![Manual Endpoints Mapping](./screenshots/07-manual-endpoints.png)
+**Screenshot Evidence:**
+- **Screenshot 7.1:** Service Without Selector (Empty Endpoints `<none>`)
+![Service Without Selector - Empty Endpoints](./screenshots/07.1-endpoints-empty.png)
+
+- **Screenshot 7.2:** Manual External IP Endpoints Binding
+![Manual Endpoints Mapping](./screenshots/07.2-endpoints-manual-bound.png)
 
 ---
 
@@ -282,8 +314,12 @@ Address: 10.96.120.45
 **Latency Analysis of `ndots:5`:**
 When a query contains fewer than 5 dots (e.g., `api.github.com` has 2 dots), the DNS resolver first appends all local search domains (`api.github.com.default.svc.cluster.local.`, `api.github.com.svc.cluster.local.`, etc.), generating 3 to 4 sequential NXDOMAIN queries before finally querying the external root server. In high-throughput environments, this induces significant DNS latency, which can be mitigated by appending a trailing dot (`api.github.com.`) or setting `ndots:2` in `dnsConfig`.
 
-**Screenshot:**
-![CoreDNS & FQDN](./screenshots/08-coredns-fqdn.png)
+**Screenshot Evidence:**
+- **Screenshot 8.1:** Container Resolv.conf Configuration & `ndots:5`
+![Container DNS Config & ndots](./screenshots/08.1-resolv-conf-ndots.png)
+
+- **Screenshot 8.2:** CoreDNS Hierarchical FQDN Resolution
+![CoreDNS FQDN Resolution](./screenshots/08.2-coredns-resolution.png)
 
 ---
 
@@ -317,8 +353,12 @@ web-app-clusterip-6c679b9456-x8k2m     1/1     Running   0          4s
 web-stateful-0                         1/1     Running   0          3s
 ```
 
-**Screenshot:**
-![Pod Identity Invariance](./screenshots/09-pod-identity.png)
+**Screenshot Evidence:**
+- **Screenshot 9.1:** Deployment Random Hashes vs StatefulSet Ordinals
+![Pod Naming Schemes Comparison](./screenshots/09.1-pod-naming-comparison.png)
+
+- **Screenshot 9.2:** Pod Deletion & Lifecycle Invariance Drill
+![Pod Deletion Invariance Drill](./screenshots/09.2-pod-deletion-invariance.png)
 
 ---
 
@@ -336,8 +376,9 @@ web-stateful-0                         1/1     Running   0          3s
 | **Associated Service Pattern** | Virtual IP (`ClusterIP` / `NodePort`) | **Headless Service** (`clusterIP: None`) | Optional local `ClusterIP` |
 | **Production Workloads** | Nginx, Node.js API, Python Flask, Go | Kafka, Cassandra, PostgreSQL, ZooKeeper | Prometheus Node-Exporter, Fluentd, Cilium |
 
-**Screenshot:**
-![Master Architectural Matrix](./screenshots/10-architectural-matrix.png)
+**Screenshot Evidence:**
+- **Screenshot 10.1:** Master Architectural Reference Matrix
+![Master Architectural Matrix](./screenshots/10.1-architectural-matrix.png)
 
 ---
 
@@ -364,8 +405,9 @@ Public Internet ──► [ Single Unified Cloud Load Balancer: $25/mo ]
 Total for 50 services = $25 / month  ──► NET SAVINGS: $1,225 / month (98% reduction!)
 ```
 
-**Screenshot:**
-![Cost Optimization & Decision Tree](./screenshots/11-cost-optimization.png)
+**Screenshot Evidence:**
+- **Screenshot 11.1:** Decision Tree Flowchart & Enterprise Cloud Cost Model
+![Cost Optimization & Decision Tree](./screenshots/11.1-cost-optimization-tree.png)
 
 ---
 
@@ -411,5 +453,9 @@ HTTP/1.1 200 OK
 Server: nginx/1.27.0
 ```
 
-**Screenshot:**
-![Docker Driver Gotcha](./screenshots/12-docker-driver-gotcha.png)
+**Screenshot Evidence:**
+- **Screenshot 12.1:** Docker Driver Bridge Network Isolation Failure Analysis
+![Docker Driver Bridge Isolation Failure](./screenshots/12.1-docker-bridge-isolation-failure.png)
+
+- **Screenshot 12.2:** Minikube Service & Layer 3 Tunnel Workaround Verification
+![Tunnel & Service Workaround Verification](./screenshots/12.2-minikube-tunnel-service-workaround.png)
