@@ -117,7 +117,7 @@ web-app-hpa   Deployment/web-app   0%/50%    2         5         2          30s
 1. Pick one of the running Pods and write your name to `/data/student.txt`:
 ```bash
 POD_NAME=$(kubectl get pods -n production-webapp -l app=web-app -o jsonpath='{.items[0].metadata.name}')
-kubectl exec -n production-webapp "$POD_NAME" -- sh -c 'echo "Student: Jane Doe" > /data/student.txt'
+kubectl exec -n production-webapp "$POD_NAME" -- sh -c 'echo "Student: Neerasa Veda Varshit" > /data/student.txt'
 ```
 
 2. Confirm the file exists:
@@ -126,7 +126,7 @@ kubectl exec -n production-webapp "$POD_NAME" -- cat /data/student.txt
 ```
 Output:
 ```text
-Student: Jane Doe
+Student: Neerasa Veda Varshit
 ```
 
 3. Delete the Pod:
@@ -141,7 +141,7 @@ kubectl exec -n production-webapp "$NEW_POD" -- cat /data/student.txt
 ```
 Expected output:
 ```text
-Student: Jane Doe
+Student: Neerasa Veda Varshit
 ```
 *Result: The Pod was terminated and rescheduled, but the data remained completely intact on the PersistentVolume.*
 
