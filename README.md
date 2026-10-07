@@ -1,16 +1,45 @@
-# Docker & Git Homework Repository
+# DevOps & Cloud Engineering Portfolio
 
 ## Author Details
 
-- **Name:** Veda Varshit
+- **Student Name:** Neerasa Veda Varshit
 - **Enrollment Number:** 24bcs10005
+- **Course:** SST DevOps & Cloud [SWE]
+- **Repository:** [NEERASA-VEDA-VARSHIT/Devops](https://github.com/NEERASA-VEDA-VARSHIT/Devops)
 
 ---
 
-## Repository Structure
+## 📚 Complete DevOps Curriculum & Submission Index
+
+| Session | Module Title | Deliverables & Topics | Documentation Link |
+| :---: | :--- | :--- | :--- |
+| **02** | Linux Fundamentals | Inodes (`ln`, `ln -s`), `adduser` vs `useradd`, Systemd, Cheat Sheet | [LinuxFundamentals/readme.md](./LinuxFundamentals/readme.md) |
+| **03** | Shell Scripting | Automation script (`system_info.sh`), CLI flags, exit codes | [ShellScripting/readme.md](./ShellScripting/readme.md) |
+| **04** | Networking Fundamentals | 8 diagnostic tools (`ping`, `curl`, `netstat`, `traceroute`, etc.) | [NetworkingFundamentals/README.md](./NetworkingFundamentals/README.md) |
+| **05** | Git & GitHub | `git commit -a -m`, multi-commit cherry-pick workflow | [Git/readme.md](./Git/readme.md) |
+| **06–07** | Docker Fundamentals | 6 containerized applications (Node, Python, Java, Apache, Nginx, React) | [DockerFundamentals/README.md](./DockerFundamentals/README.md) |
+| **08** | Docker Networking & Volumes | Multi-tier bridge networks, isolation, bind mounts | [DockerNetwork/README.md](./DockerNetwork/README.md) |
+| **09** | Kubernetes Fundamentals | Minikube setup, cluster health, node architecture | [session9-k8s/README.md](./session9-k8s/README.md) |
+| **10** | Kubernetes Core Objects | Pod lifecycle, ReplicaSet, StatefulSet, Rolling Update, Canary | [session10-k8s-core-objects/README.md](./session10-k8s-core-objects/README.md) |
+| **11** | Kubernetes Networking & Services | ClusterIP, NodePort, LoadBalancer, CoreDNS, FQDN resolution | [session-11-kubernetes-services/README.md](./session-11-kubernetes-services/README.md) |
+| **12** | Ingress, ConfigMaps & Secrets | L7 path/host routing, ConfigMaps, Secret decoupling | [session-12-ingress-configmaps-secrets/README.md](./session-12-ingress-configmaps-secrets/README.md) |
+| **13** | Storage, HPA & Probes | Dynamic PVC/PV storage, HPA CPU autoscaling, probes | [session-13-storage-hpa-probes/README.md](./session-13-storage-hpa-probes/README.md) |
+| **14** | Kubernetes Troubleshooting | Multi-tier triage, CrashLoopBackOff, ImagePullBackOff, Pending | [session-14-kubernetes-troubleshooting/README.md](./session-14-kubernetes-troubleshooting/README.md) |
+| **15** | Helm Package Manager | Chart scaffolding, templates, values, install, upgrade, rollback | [session-15-helm/README.md](./session-15-helm/README.md) |
+| **16** | CI/CD & GitHub Actions | Automated build/test pipeline, artifacts, secrets, workflow runs | [session-16-github-actions/README.md](./session-16-github-actions/README.md) \| [session16-cicd](./session16-cicd/README.md) |
+| **17** | DevSecOps & Security | SAST (Bandit), SCA (pip-audit), Trivy container scanning | [session-17-devsecops/README.md](./session-17-devsecops/README.md) |
+| **18** | Terraform & IaC | Declarative S3 bucket provisioning, AWS IAM least-privilege | [session18-terraform-iac/README.md](./session18-terraform-iac/README.md) |
+| **19** | Multi-Tier Cloud with Terraform | Modular VPC, public/private subnets, EC2, S3, Security Groups | [session19-cloud-terraform/README.md](./session19-cloud-terraform/README.md) |
+| **20** | Monitoring, Logging & GitOps | Prometheus, Grafana, Loki, OpenTelemetry, ArgoCD GitOps | [session20-monitoring-observability-gitops/README.md](./session20-monitoring-observability-gitops/README.md) |
+| **21** | Final DevOps Capstone Project | Production 3-tier TaskBoard app, GitOps, DevSecOps, EKS | [final-devops-project/README.md](./final-devops-project/README.md) |
+
+---
+
+## Repository Structure Overview
 
 ```
 C:\Users\Veda\Desktop\Devops\
+
 ├── DockerFundamentals\          # All Docker app folders (Node.js, Python, Java, Apache, Nginx, React, Bind Mount)
 │   ├── nodejs-app\
 │   ├── python-app\
@@ -329,8 +358,9 @@ git cherry-pick <commit-hash>
 
 ## Submission
 
-All files committed and ready for GitHub push:
+Repository is fully configured, validated, and synced to GitHub:
 ```bash
-git remote add origin <your-repo-url>
-git push -u origin main
+git remote add origin https://github.com/NEERASA-VEDA-VARSHIT/Devops.git
+git push origin main
 ```
+

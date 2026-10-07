@@ -216,21 +216,15 @@ jobs:
           echo "Container verified successfully."
 ```
 
-### GitHub Actions Pipeline Execution Logs:
+### GitHub Actions Pipeline Execution Evidence:
 ```text
-Final CI/CD Pipeline #4
-Run ID: 10982341254
-Event: push (main)
-Conclusion: success
+GitHub Actions Workflow Runs:
+Repository: github.com/NEERASA-VEDA-VARSHIT/hey-cicd
+Branch: main
 
-Jobs in this run:
-  * Test Application (test)             - Completed in 22s (Success)
-  * Build Application (build)           - Completed in 14s (Success)
-  * Security Check (security-check)     - Completed in 8s  (Success)
-  * CD Deploy Application (cd-deploy)   - Completed in 18s (Success)
-
-Artifacts:
-  * calculator-build (34.2 KB) - Retained for 90 days
+Workflows & Runs:
+  * secret added (#2)         - Commit 056474f pushed by NEERASA-VEDA-VARSHIT (Duration: 8s, Conclusion: Success)
+  * Hello GitHub Actions (#1)  - Manually run by NEERASA-VEDA-VARSHIT (Duration: 11s, Conclusion: Success)
 ```
 
 ![GitHub Actions Pipeline](./screenshots/03-github-actions-pipeline.png)

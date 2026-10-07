@@ -72,25 +72,25 @@ bitnami/nginx   18.1.5          1.27.0        NGINX Open Source is an open-sourc
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Dev as DevOps Engineer
-    participant Helm as Helm CLI v3
-    participant K8s as Kubernetes Cluster
-    participant Sec as Secret (Release History)
+    actor Dev as "DevOps Engineer"
+    participant Helm as "Helm CLI v3"
+    participant K8s as "Kubernetes Cluster"
+    participant Sec as "Secret (Release History)"
 
     Dev->>Helm: helm install notes-demo ./notes-chart
-    Helm->>K8s: Deploy Revision 1 (nginx:1.24, 1 replica)
+    Helm->>K8s: Deploy Revision 1 (nginx v1.24, 1 replica)
     Helm->>Sec: Record Release notes-demo.v1 (deployed)
     
     Dev->>Helm: helm upgrade notes-demo (bad image)
-    Helm->>K8s: Apply Revision 2 (nginx:invalid-tag)
+    Helm->>K8s: Apply Revision 2 (nginx invalid-tag)
     Helm->>Sec: Record notes-demo.v2 (deployed, v1 superseded)
-    Note over K8s: Pod enters ImagePullBackOff!
+    Note over K8s: Pod enters ImagePullBackOff
 
     Dev->>Helm: helm history notes-demo
     Dev->>Helm: helm rollback notes-demo 1
     Helm->>K8s: Restore Revision 1 manifests
     Helm->>Sec: Record notes-demo.v3 (Rollback to 1)
-    Note over K8s: Pod terminates; healthy nginx:1.24 boots!
+    Note over K8s: Pod terminates and healthy nginx boots successfully
 ```
 
 ### Step 2.1: Initial Release Installation
