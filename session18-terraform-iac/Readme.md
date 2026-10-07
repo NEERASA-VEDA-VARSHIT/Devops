@@ -48,6 +48,11 @@ Initializing provider plugins...
 
 Terraform has been successfully initialized!
 
+PS C:\Users\Veda\Desktop\devops-heros\session18-terraform-iac\terraform-s3-demo> terraform fmt
+main.tf
+variables.tf
+
+PS C:\Users\Veda\Desktop\devops-heros\session18-terraform-iac\terraform-s3-demo> terraform validate
 Success! The configuration is valid.
 ```
 
@@ -55,99 +60,130 @@ Success! The configuration is valid.
 
 ---
 
-### 1.2 Execution Plan & Resource Provisioning
+### 1.2 Execution Plan (`terraform plan`)
 ```bash
-terraform plan -out=tfplan
-terraform apply tfplan
+terraform plan
 ```
 
 ```text
 Terraform will perform the following actions:
 
-  # aws_s3_bucket.yatri10005 will be created
-  + resource "aws_s3_bucket" "yatri10005" {
+  # aws_s3_bucket.yatri1107 will be created
+  + resource "aws_s3_bucket" "yatri1107" {
+      + acceleration_status         = (known after apply)
+      + acl                         = (known after apply)
       + arn                         = (known after apply)
-      + bucket                      = "yatri10005-devops-s3-bucket"
+      + bucket                      = "yatri1107"
       + bucket_domain_name          = (known after apply)
+      + bucket_prefix               = (known after apply)
+      + bucket_regional_domain_name = (known after apply)
       + force_destroy               = true
+      + hosted_zone_id              = (known after apply)
       + id                          = (known after apply)
+      + object_lock_enabled         = (known after apply)
+      + policy                      = (known after apply)
       + region                      = "ap-south-1"
+      + request_payer               = (known after apply)
       + tags                        = {
           + "Environment" = "dev"
           + "ManagedBy"   = "Terraform"
-          + "Name"        = "yatri10005-devops-s3-bucket"
+          + "Name"        = "yatri1107"
           + "Project"     = "Session18"
         }
+      + website_domain              = (known after apply)
+      + website_endpoint            = (known after apply)
     }
 
 Plan: 1 to add, 0 to change, 0 to destroy.
 
-aws_s3_bucket.yatri10005: Creating...
-aws_s3_bucket.yatri10005: Creation complete after 3s [id=yatri10005-devops-s3-bucket]
-
-Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+Changes to Outputs:
+  + bucket_arn    = (known after apply)
+  + bucket_name   = "yatri1107"
+  + bucket_region = "ap-south-1"
 ```
 
-![Terraform Plan and Apply](./screenshots/02-terraform-plan-apply.png)
+![Terraform Plan Resource](./screenshots/02-terraform-plan-resource.png)
+![Terraform Plan Outputs](./screenshots/03-terraform-plan-outputs.png)
 
 ---
 
-### 1.3 State Inspection & Output Verification
+### 1.3 IAM Permission Boundary & Access Troubleshooting
+When applying the bucket name `yatri1107`, AWS IAM policy boundaries for student IAM user `devops-section` enforced specific resource naming conventions (`yatri10005`):
+
 ```bash
-terraform output
-terraform show
+terraform apply
 ```
 
 ```text
-bucket_arn  = "arn:aws:s3:::yatri10005-devops-s3-bucket"
-bucket_name = "yatri10005-devops-s3-bucket"
-bucket_region = "ap-south-1"
+aws_s3_bucket.yatri1107: Creating...
 
-# aws_s3_bucket.yatri10005:
-resource "aws_s3_bucket" "yatri10005" {
-    arn                         = "arn:aws:s3:::yatri10005-devops-s3-bucket"
-    bucket                      = "yatri10005-devops-s3-bucket"
-    bucket_domain_name          = "yatri10005-devops-s3-bucket.s3.amazonaws.com"
-    force_destroy               = true
-    id                          = "yatri10005-devops-s3-bucket"
-    region                      = "ap-south-1"
-    tags                        = {
-        "Environment" = "dev"
-        "ManagedBy"   = "Terraform"
-        "Name"        = "yatri10005-devops-s3-bucket"
-        "Project"     = "Session18"
-    }
-}
+Error: creating S3 Bucket (yatri1107): operation error S3: CreateBucket, https response error StatusCode: 403, RequestID: H5AHFWHEZMKRRDM1, HostID: 4+T2R6k9MZwodnwYEOiptMfEg621wz9OPtQM1nh/AmLIyHuD2ZWRp4D6nZ7UjkopOhQ+43tupg8HQtrhZaDgwdBAfTRXTSla, api error AccessDenied: User: arn:aws:iam::304166770455:user/devops-section is not authorized to perform: s3:CreateBucket on resource: "arn:aws:s3:::yatri1107" because no identity-based policy allows the s3:CreateBucket action
+
+  with aws_s3_bucket.yatri1107,
+  on main.tf line 1, in resource "aws_s3_bucket" "yatri1107":
+   1: resource "aws_s3_bucket" "yatri1107" {
 ```
 
-![Terraform Show and Outputs](./screenshots/03-terraform-show-output.png)
+![Terraform Apply IAM Boundary Troubleshooting](./screenshots/04-terraform-apply-iam-troubleshooting.png)
+
+**Resolution:**
+Updated resource declaration and parameter `bucket_name` in `variables.tf` and `terraform.tfvars` to student ID bucket `yatri10005` matching the IAM policy allowance.
 
 ---
 
-### 1.4 Clean Infrastructure Teardown (`destroy`)
+### 1.4 Successful Provisioning & Outputs (`terraform apply`)
+```bash
+terraform apply
+```
+
+```text
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+aws_s3_bucket.yatri10005: Creating...
+aws_s3_bucket.yatri10005: Creation complete after 1s [id=yatri10005]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+bucket_arn = "arn:aws:s3:::yatri10005"
+bucket_name = "yatri10005"
+bucket_region = "ap-south-1"
+```
+
+![Terraform Apply Success](./screenshots/05-terraform-apply-success.png)
+
+---
+
+### 1.5 Clean Infrastructure Teardown (`terraform destroy`)
 ```bash
 terraform destroy -auto-approve
 ```
 
 ```text
-aws_s3_bucket.yatri10005: Refreshing state... [id=yatri10005-devops-s3-bucket]
+aws_s3_bucket.yatri10005: Refreshing state... [id=yatri10005]
 
 Terraform will perform the following actions:
   # aws_s3_bucket.yatri10005 will be destroyed
   - resource "aws_s3_bucket" "yatri10005" {
-      - bucket = "yatri10005-devops-s3-bucket" -> null
-      - id     = "yatri10005-devops-s3-bucket" -> null
+      - bucket = "yatri10005" -> null
+      - id     = "yatri10005" -> null
     }
 
 Plan: 0 to add, 0 to change, 1 to destroy.
 
-aws_s3_bucket.yatri10005: Destroying... [id=yatri10005-devops-s3-bucket]
-aws_s3_bucket.yatri10005: Destruction complete after 2s
+aws_s3_bucket.yatri10005: Destroying... [id=yatri10005]
+aws_s3_bucket.yatri10005: Destruction complete after 1s
 
 Destroy complete! Resources: 1 destroyed.
 ```
 
-![Terraform Destroy](./screenshots/04-terraform-destroy.png)
+![Terraform Destroy](./screenshots/06-terraform-destroy.png)
+
 
 ---
 

@@ -33,7 +33,7 @@ terraform.tfvars
 main.tf
      |
      v
-aws_s3_bucket.demo
+aws_s3_bucket.yatri10005
      |
      v
 AWS S3 Bucket
@@ -72,7 +72,9 @@ terraform init
 Expected:
 
 ```text
-Initializing the provider plugins...
+Initializing provider plugins...
+- Finding hashicorp/aws versions matching ">= 5.0.0"...
+- Installing hashicorp/aws v5.82.2...
 Terraform has been successfully initialized!
 ```
 
@@ -131,8 +133,8 @@ Expected:
 ```text
 Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 Outputs:
-bucket_arn = "arn:aws:s3:::demo"
-bucket_name = "demo"
+bucket_arn = "arn:aws:s3:::yatri10005"
+bucket_name = "yatri10005"
 bucket_region = "ap-south-1"
 ```
 
@@ -145,13 +147,13 @@ terraform state list
 Expected:
 
 ```text
-aws_s3_bucket.demo
+aws_s3_bucket.yatri10005
 ```
 
 Inspect the resource:
 
 ```bash
-terraform state show aws_s3_bucket.demo
+terraform state show aws_s3_bucket.yatri10005
 ```
 
 ### 7. Check Output
@@ -169,7 +171,7 @@ terraform output bucket_name
 Expected:
 
 ```text
-"demo"
+"yatri10005"
 ```
 
 ### 8. Verify Using AWS CLI
@@ -181,7 +183,7 @@ aws s3 ls
 Or:
 
 ```bash
-aws s3api head-bucket --bucket demo
+aws s3api head-bucket --bucket yatri10005
 ```
 
 ### 9. Destroy
@@ -223,10 +225,18 @@ terraform plan
 terraform apply
 terraform output
 terraform state list
-terraform state show aws_s3_bucket.demo
+terraform state show aws_s3_bucket.yatri10005
 terraform plan -destroy
 terraform destroy
 ```
+
+## Screenshots & Evidence
+Authentic terminal execution screenshots are archived in [`../screenshots/`](../screenshots/):
+* `01-terraform-init-validate.png`: Provider initialization, code formatting and syntax validation
+* `02-terraform-plan-resource.png` & `03-terraform-plan-outputs.png`: Declarative execution plan
+* `04-terraform-apply-iam-troubleshooting.png`: Real-world IAM policy boundary debugging
+* `05-terraform-apply-success.png`: Successful bucket creation and output exports
+* `06-terraform-destroy.png`: Clean teardown of resources
 
 ## Terraform Lifecycle
 

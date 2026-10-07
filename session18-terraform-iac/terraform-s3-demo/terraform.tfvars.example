@@ -1,0 +1,3 @@
+# Terraform Variables Configuration Example
+aws_region  = "ap-south-1"
+bucket_name = "yatri10005"
