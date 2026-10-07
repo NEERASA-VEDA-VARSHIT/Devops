@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fail-4-dns-failure-pod
+  labels:
+    tier: triage-gauntlet
+    scenario: dns-failure
+spec:
+  containers:
+    - name: client
+      image: curlimages/curl:8.6.0
+      command: ["sh", "-c"]
+      args:
+        - |
+          echo "Attempting connection to internal cluster API service...";
+          # FIX: Target valid cluster DNS hostname
+          curl -k -s --connect-timeout 5 https://kubernetes.default.svc.cluster.local:443 || true;
+          echo "Process sleeping healthy...";
+          sleep 3600

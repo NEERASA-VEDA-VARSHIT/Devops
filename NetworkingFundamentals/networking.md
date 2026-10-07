@@ -563,4 +563,11 @@ The commands provide different views of the same networking system:
 11. **Virtual network adapters** can be created by technologies such as WSL and Hyper-V.
 
 
-![alt text](<Screenshot 2026-09-04 215503.png>) ![alt text](<Screenshot 2026-09-04 215512.png>) ![alt text](<Screenshot 2026-09-04 215518.png>) ![alt text](<Screenshot 2026-09-04 215522.png>) ![alt text](<Screenshot 2026-09-04 215530.png>) ![alt text](<Screenshot 2026-09-04 215535.png>) ![alt text](<Screenshot 2026-09-04 215550.png>) ![alt text](<Screenshot 2026-09-04 215554.png>)
+![Screenshot 1](Screenshot%202026-09-04%20215503.png)
+![Screenshot 2](Screenshot%202026-09-04%20215512.png)
+![Screenshot 3](Screenshot%202026-09-04%20215518.png)
+![Screenshot 4](Screenshot%202026-09-04%20215522.png)
+![Screenshot 5](Screenshot%202026-09-04%20215530.png)
+![Screenshot 6](Screenshot%202026-09-04%20215535.png)
+![Screenshot 7](Screenshot%202026-09-04%20215550.png)
+![Screenshot 8](Screenshot%202026-09-04%20215554.png)
