@@ -1,0 +1,177 @@
+# Session 18: Terraform & Infrastructure as Code (IaC)
+
+**Course:** SST DevOps & Cloud [SWE]  
+**Session:** 18 - Infrastructure as Code with HashiCorp Terraform & AWS Cloud  
+**Student Name:** Neerasa Veda Varshit  
+**Enrollment Number:** 24bcs10005  
+**Environment:** Windows 11 Home / Terraform v1.16+ / AWS Provider v5.82+  
+**Repository:** `NEERASA-VEDA-VARSHIT/Devops` / `session18-terraform-iac`
+
+---
+
+## 📌 Overview
+
+Infrastructure as Code (IaC) allows cloud engineers to define, provision, version, and destroy cloud infrastructure using declarative configuration files rather than manual console clicking.
+
+This lab delivers:
+1. **Task 1: End-to-End Terraform S3 Demo (`terraform-s3-demo/`):** Implementation of modular HCL configurations (`main.tf`, `variables.tf`, `outputs.tf`, `provider.tf`, `terraform.tfvars`) executing the full declarative lifecycle from `init` through `apply` to `destroy`.
+2. **Task 2: AWS Core Services Research (`aws-services/`):** Comprehensive architectural guides for IAM, EC2, S3, VPC, and DynamoDB & RDS.
+
+---
+
+## Task 1: Terraform S3 Bucket Demo
+
+### Project Architecture & File Structure:
+```text
+terraform-s3-demo/
+├── provider.tf          # Configures the AWS provider and region
+├── main.tf              # Declares aws_s3_bucket resource with tagging
+├── variables.tf         # Parameterizes aws_region and bucket_name
+├── terraform.tfvars     # Concrete environment variable inputs
+├── outputs.tf           # Exports bucket_arn, bucket_name, and bucket_region
+└── README.md            # Module documentation
+```
+
+### 1.1 Initialization, Formatting & Validation
+```bash
+terraform init
+terraform fmt
+terraform validate
+```
+
+```text
+Initializing the backend...
+Initializing provider plugins...
+- Finding hashicorp/aws versions matching ">= 5.0.0"...
+- Installing hashicorp/aws v5.82.2...
+- Installed hashicorp/aws v5.82.2 (signed by HashiCorp)
+
+Terraform has been successfully initialized!
+
+Success! The configuration is valid.
+```
+
+![Terraform Init, Format and Validate](./screenshots/01-terraform-init-validate.png)
+
+---
+
+### 1.2 Execution Plan & Resource Provisioning
+```bash
+terraform plan -out=tfplan
+terraform apply tfplan
+```
+
+```text
+Terraform will perform the following actions:
+
+  # aws_s3_bucket.yatri10005 will be created
+  + resource "aws_s3_bucket" "yatri10005" {
+      + arn                         = (known after apply)
+      + bucket                      = "yatri10005-devops-s3-bucket"
+      + bucket_domain_name          = (known after apply)
+      + force_destroy               = true
+      + id                          = (known after apply)
+      + region                      = "ap-south-1"
+      + tags                        = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "Terraform"
+          + "Name"        = "yatri10005-devops-s3-bucket"
+          + "Project"     = "Session18"
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+aws_s3_bucket.yatri10005: Creating...
+aws_s3_bucket.yatri10005: Creation complete after 3s [id=yatri10005-devops-s3-bucket]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+```
+
+![Terraform Plan and Apply](./screenshots/02-terraform-plan-apply.png)
+
+---
+
+### 1.3 State Inspection & Output Verification
+```bash
+terraform output
+terraform show
+```
+
+```text
+bucket_arn  = "arn:aws:s3:::yatri10005-devops-s3-bucket"
+bucket_name = "yatri10005-devops-s3-bucket"
+bucket_region = "ap-south-1"
+
+# aws_s3_bucket.yatri10005:
+resource "aws_s3_bucket" "yatri10005" {
+    arn                         = "arn:aws:s3:::yatri10005-devops-s3-bucket"
+    bucket                      = "yatri10005-devops-s3-bucket"
+    bucket_domain_name          = "yatri10005-devops-s3-bucket.s3.amazonaws.com"
+    force_destroy               = true
+    id                          = "yatri10005-devops-s3-bucket"
+    region                      = "ap-south-1"
+    tags                        = {
+        "Environment" = "dev"
+        "ManagedBy"   = "Terraform"
+        "Name"        = "yatri10005-devops-s3-bucket"
+        "Project"     = "Session18"
+    }
+}
+```
+
+![Terraform Show and Outputs](./screenshots/03-terraform-show-output.png)
+
+---
+
+### 1.4 Clean Infrastructure Teardown (`destroy`)
+```bash
+terraform destroy -auto-approve
+```
+
+```text
+aws_s3_bucket.yatri10005: Refreshing state... [id=yatri10005-devops-s3-bucket]
+
+Terraform will perform the following actions:
+  # aws_s3_bucket.yatri10005 will be destroyed
+  - resource "aws_s3_bucket" "yatri10005" {
+      - bucket = "yatri10005-devops-s3-bucket" -> null
+      - id     = "yatri10005-devops-s3-bucket" -> null
+    }
+
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+aws_s3_bucket.yatri10005: Destroying... [id=yatri10005-devops-s3-bucket]
+aws_s3_bucket.yatri10005: Destruction complete after 2s
+
+Destroy complete! Resources: 1 destroyed.
+```
+
+![Terraform Destroy](./screenshots/04-terraform-destroy.png)
+
+---
+
+## Task 2: AWS Core Services Research Deliverables
+
+Dedicated research guides have been authored in the [aws-services/](./aws-services/) module:
+
+| AWS Service | Category | Research Focus | Documentation Link |
+| :--- | :--- | :--- | :--- |
+| **01. IAM** | Security & Governance | Users, Groups, Roles, Policies, Principle of Least Privilege, OIDC Federation | [01-iam/README.md](./aws-services/01-iam/README.md) |
+| **02. EC2** | Compute | AMIs, Instance Families, Key Pairs, Security Groups, EBS block storage, Lifecycle | [02-ec2/README.md](./aws-services/02-ec2/README.md) |
+| **03. S3** | Storage | Buckets, Objects, Storage Classes, Versioning, Lifecycle Rules, SSE-KMS Encryption | [03-s3/README.md](./aws-services/03-s3/README.md) |
+| **04. VPC** | Networking | CIDR calculation, Public/Private Subnets, Route Tables, IGW, NAT Gateway, NACLs vs SGs | [04-vpc/README.md](./aws-services/04-vpc/README.md) |
+| **05. DynamoDB & RDS** | Databases | NoSQL key-value design vs relational ACID SQL, Multi-AZ High Availability, Read Replicas | [05-dynamodb-rds/README.md](./aws-services/05-dynamodb-rds/README.md) |
+
+---
+
+## Summary Matrix
+
+| Milestone | Deliverables | Verification | Status |
+| :--- | :--- | :--- | :--- |
+| **Terraform Workflow** | `terraform-s3-demo/` with 5 HCL manifests | `screenshots/01` to `04` | ✅ Complete |
+| **AWS IAM Research** | `aws-services/01-iam/README.md` | Theoretical deep dive & architecture | ✅ Complete |
+| **AWS EC2 Research** | `aws-services/02-ec2/README.md` | Theoretical deep dive & architecture | ✅ Complete |
+| **AWS S3 Research** | `aws-services/03-s3/README.md` | Theoretical deep dive & architecture | ✅ Complete |
+| **AWS VPC Research** | `aws-services/04-vpc/README.md` | Theoretical deep dive & architecture | ✅ Complete |
+| **AWS DB Research** | `aws-services/05-dynamodb-rds/README.md` | Decision matrix & architecture | ✅ Complete |
