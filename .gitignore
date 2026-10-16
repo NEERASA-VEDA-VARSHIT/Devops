@@ -29,7 +29,6 @@ htmlcov/
 .terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
 crash.log
 
 # Operating System & IDE
