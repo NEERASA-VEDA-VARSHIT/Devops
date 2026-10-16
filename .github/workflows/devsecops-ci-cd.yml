@@ -89,9 +89,6 @@ jobs:
             --output backend-scan.txt \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
           cat backend-scan.txt
-          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
-            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
-            ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
 
       - name: Trivy Vulnerability Scan - Frontend Image
         run: |
@@ -100,6 +97,43 @@ jobs:
             --output frontend-scan.txt \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
           cat frontend-scan.txt
+
+      - name: Publish Security Scan Summaries
+        if: always()
+        run: |
+          {
+            echo "## DevSecOps Trivy Security Gate Report"
+            echo ""
+            if [ -f backend-scan.txt ]; then
+              echo "### Backend Scan Report"
+              echo '```'
+              cat backend-scan.txt
+              echo '```'
+            fi
+            if [ -f frontend-scan.txt ]; then
+              echo "### Frontend Scan Report"
+              echo '```'
+              cat frontend-scan.txt
+              echo '```'
+            fi
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Security Scan Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-security-reports
+          path: |
+            backend-scan.txt
+            frontend-scan.txt
+          if-no-files-found: ignore
+
+      - name: Enforce Security Gate (Fail on HIGH or CRITICAL)
+        run: |
+          echo "Enforcing Trivy security gate (exit-code 1 on HIGH or CRITICAL findings)..."
+          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
           trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
             --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
