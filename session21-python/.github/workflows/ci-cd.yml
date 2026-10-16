@@ -39,16 +39,15 @@ jobs:
         run: |
           docker build -t ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }} ./backend
           docker build -t ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }} ./frontend
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
       - name: Scan backend
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasecurity/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed \
-            ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}
-       - name: Scan frontend
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}
+      - name: Scan frontend
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasecurity/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed \
-            ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }}
       - name: Push images
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}

@@ -78,19 +78,17 @@ jobs:
                        -t ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:latest \
                        final-devops-project/application/frontend
 
+      - name: Install Trivy Security Scanner
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+
       - name: Trivy Vulnerability Scan - Backend Image
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasecurity/trivy:latest image --severity CRITICAL,HIGH --ignore-unfixed \
-            --format table --exit-code 0 \
-            ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
 
       - name: Trivy Vulnerability Scan - Frontend Image
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasecurity/trivy:latest image --severity CRITICAL,HIGH --ignore-unfixed \
-            --format table --exit-code 0 \
-            ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
 
       - name: Push Docker Images to GHCR
         if: github.ref == 'refs/heads/main'
