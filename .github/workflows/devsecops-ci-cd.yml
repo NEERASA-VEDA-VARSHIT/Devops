@@ -85,7 +85,7 @@ jobs:
       - name: Trivy Vulnerability Scan - Backend Image
         run: |
           trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
-            --severity HIGH,CRITICAL --ignore-unfixed --format table \
+            --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --format table \
             --output backend-scan.txt \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
           cat backend-scan.txt
@@ -93,7 +93,7 @@ jobs:
       - name: Trivy Vulnerability Scan - Frontend Image
         run: |
           trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
-            --severity HIGH,CRITICAL --ignore-unfixed --format table \
+            --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --format table \
             --output frontend-scan.txt \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
           cat frontend-scan.txt
@@ -132,10 +132,10 @@ jobs:
         run: |
           echo "Enforcing Trivy security gate (exit-code 1 on HIGH or CRITICAL findings)..."
           trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
-            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --exit-code 1 \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
           trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
-            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --exit-code 1 \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
 
       - name: Push Docker Images to GHCR

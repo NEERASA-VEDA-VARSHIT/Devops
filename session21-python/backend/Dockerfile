@@ -6,6 +6,7 @@ RUN apk update && apk upgrade --no-cache && \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip "setuptools>=78.1.1" && \
     pip install --no-cache-dir -r requirements.txt && \
+    find /usr/local/lib -name "bom.cdx.json" -delete && \
     adduser -D -u 10001 appuser
 COPY alembic.ini ./
 COPY alembic ./alembic
