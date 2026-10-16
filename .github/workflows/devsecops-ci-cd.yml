@@ -84,11 +84,25 @@ jobs:
 
       - name: Trivy Vulnerability Scan - Backend Image
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
+          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+            --severity HIGH,CRITICAL --ignore-unfixed --format table \
+            --output backend-scan.txt \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
+          cat backend-scan.txt
+          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
 
       - name: Trivy Vulnerability Scan - Frontend Image
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
+          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+            --severity HIGH,CRITICAL --ignore-unfixed --format table \
+            --output frontend-scan.txt \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
+          cat frontend-scan.txt
+          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
 
       - name: Push Docker Images to GHCR
         if: github.ref == 'refs/heads/main'
