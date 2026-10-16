@@ -79,7 +79,7 @@ jobs:
                        final-devops-project/application/frontend
 
       - name: Trivy Vulnerability Scan - Backend Image
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
           format: 'table'
@@ -88,7 +88,7 @@ jobs:
           exit-code: '0'
 
       - name: Trivy Vulnerability Scan - Frontend Image
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
           format: 'table'
