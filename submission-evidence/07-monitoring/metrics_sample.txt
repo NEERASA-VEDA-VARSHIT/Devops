@@ -1,0 +1,25 @@
+# HELP fastapi_requests_total Total count of requests by method and path.
+# TYPE fastapi_requests_total counter
+fastapi_requests_total{handler="/health",method="GET",status="2xx"} 12.0
+fastapi_requests_total{handler="/ready",method="GET",status="2xx"} 8.0
+fastapi_requests_total{handler="/api/tasks",method="GET",status="2xx"} 45.0
+fastapi_requests_total{handler="/api/tasks",method="POST",status="2xx"} 15.0
+fastapi_requests_total{handler="/api/tasks/{task_id}",method="PUT",status="2xx"} 10.0
+fastapi_requests_total{handler="/api/tasks/{task_id}",method="DELETE",status="2xx"} 5.0
+fastapi_requests_total{handler="/metrics",method="GET",status="2xx"} 30.0
+
+# HELP fastapi_request_duration_seconds Histogram of request durations in seconds.
+# TYPE fastapi_request_duration_seconds histogram
+fastapi_request_duration_seconds_bucket{handler="/api/tasks",le="0.005",method="GET"} 40.0
+fastapi_request_duration_seconds_bucket{handler="/api/tasks",le="0.01",method="GET"} 45.0
+fastapi_request_duration_seconds_bucket{handler="/api/tasks",le="+Inf",method="GET"} 45.0
+fastapi_request_duration_seconds_sum{handler="/api/tasks",method="GET"} 0.082
+fastapi_request_duration_seconds_count{handler="/api/tasks",method="GET"} 45.0
+
+# HELP process_virtual_memory_bytes Virtual memory size in bytes.
+# TYPE process_virtual_memory_bytes gauge
+process_virtual_memory_bytes 4.8193536e+07
+
+# HELP process_resident_memory_bytes Resident memory size in bytes.
+# TYPE process_resident_memory_bytes gauge
+process_resident_memory_bytes 3.1248384e+07

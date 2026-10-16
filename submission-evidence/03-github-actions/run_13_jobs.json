@@ -1,0 +1,393 @@
+﻿{
+  "total_count": 3,
+  "jobs": [
+    {
+      "id": 117016142389,
+      "run_id": 38913844504,
+      "workflow_name": "TaskBoard Python DevSecOps CI/CD",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUOfuMs8AAAAbPrSiNQ",
+      "head_sha": "e7449735e45dc77ce7b7230ab7393d09106ae9c8",
+      "url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/actions/jobs/117016142389",
+      "html_url": "https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504/job/117016142389",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-16T14:12:06Z",
+      "started_at": "2026-10-16T14:12:08Z",
+      "completed_at": "2026-10-16T14:12:31Z",
+      "name": "Backend Tests & Frontend Build",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-16T14:12:09Z",
+          "completed_at": "2026-10-16T14:12:10Z"
+        },
+        {
+          "name": "Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-16T14:12:10Z",
+          "completed_at": "2026-10-16T14:12:12Z"
+        },
+        {
+          "name": "Set up Python 3.12",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-16T14:12:12Z",
+          "completed_at": "2026-10-16T14:12:13Z"
+        },
+        {
+          "name": "Install backend dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-16T14:12:13Z",
+          "completed_at": "2026-10-16T14:12:23Z"
+        },
+        {
+          "name": "Run Pytest test suite (10 test cases)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-16T14:12:23Z",
+          "completed_at": "2026-10-16T14:12:24Z"
+        },
+        {
+          "name": "Set up Node.js 22",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-16T14:12:24Z",
+          "completed_at": "2026-10-16T14:12:25Z"
+        },
+        {
+          "name": "Build React Frontend",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-16T14:12:25Z",
+          "completed_at": "2026-10-16T14:12:28Z"
+        },
+        {
+          "name": "Post Set up Node.js 22",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-16T14:12:28Z",
+          "completed_at": "2026-10-16T14:12:28Z"
+        },
+        {
+          "name": "Post Set up Python 3.12",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-16T14:12:28Z",
+          "completed_at": "2026-10-16T14:12:28Z"
+        },
+        {
+          "name": "Post Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-16T14:12:28Z",
+          "completed_at": "2026-10-16T14:12:28Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-16T14:12:28Z",
+          "completed_at": "2026-10-16T14:12:28Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/check-runs/117016142389",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000308,
+      "runner_name": "GitHub Actions 1000000308",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 117016333729,
+      "run_id": 38913844504,
+      "workflow_name": "TaskBoard Python DevSecOps CI/CD",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUOfuMs8AAAAbPreNoQ",
+      "head_sha": "e7449735e45dc77ce7b7230ab7393d09106ae9c8",
+      "url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/actions/jobs/117016333729",
+      "html_url": "https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504/job/117016333729",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-16T14:12:31Z",
+      "started_at": "2026-10-16T14:12:33Z",
+      "completed_at": "2026-10-16T14:13:35Z",
+      "name": "Docker Build, Trivy Security Scan & GHCR Push",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-16T14:12:34Z",
+          "completed_at": "2026-10-16T14:12:35Z"
+        },
+        {
+          "name": "Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-16T14:12:35Z",
+          "completed_at": "2026-10-16T14:12:36Z"
+        },
+        {
+          "name": "Set up Docker Buildx",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-16T14:12:36Z",
+          "completed_at": "2026-10-16T14:12:40Z"
+        },
+        {
+          "name": "Log in to GitHub Container Registry",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-16T14:12:40Z",
+          "completed_at": "2026-10-16T14:12:41Z"
+        },
+        {
+          "name": "Downcase repository owner for image tagging",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-16T14:12:41Z",
+          "completed_at": "2026-10-16T14:12:41Z"
+        },
+        {
+          "name": "Build Docker images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-16T14:12:41Z",
+          "completed_at": "2026-10-16T14:13:07Z"
+        },
+        {
+          "name": "Install Trivy Security Scanner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-16T14:13:07Z",
+          "completed_at": "2026-10-16T14:13:08Z"
+        },
+        {
+          "name": "Download Trivy Vulnerability Database",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-16T14:13:08Z",
+          "completed_at": "2026-10-16T14:13:13Z"
+        },
+        {
+          "name": "Trivy Vulnerability Scan - Backend Image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-16T14:13:13Z",
+          "completed_at": "2026-10-16T14:13:18Z"
+        },
+        {
+          "name": "Trivy Vulnerability Scan - Frontend Image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-16T14:13:18Z",
+          "completed_at": "2026-10-16T14:13:18Z"
+        },
+        {
+          "name": "Publish Security Scan Summaries",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-16T14:13:18Z",
+          "completed_at": "2026-10-16T14:13:18Z"
+        },
+        {
+          "name": "Upload Security Scan Artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-16T14:13:18Z",
+          "completed_at": "2026-10-16T14:13:19Z"
+        },
+        {
+          "name": "Enforce Security Gate (Fail on HIGH or CRITICAL)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-16T14:13:19Z",
+          "completed_at": "2026-10-16T14:13:19Z"
+        },
+        {
+          "name": "Push Docker Images to GHCR",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-16T14:13:19Z",
+          "completed_at": "2026-10-16T14:13:33Z"
+        },
+        {
+          "name": "Post Log in to GitHub Container Registry",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-10-16T14:13:33Z",
+          "completed_at": "2026-10-16T14:13:33Z"
+        },
+        {
+          "name": "Post Set up Docker Buildx",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-10-16T14:13:33Z",
+          "completed_at": "2026-10-16T14:13:33Z"
+        },
+        {
+          "name": "Post Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-10-16T14:13:33Z",
+          "completed_at": "2026-10-16T14:13:34Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-10-16T14:13:34Z",
+          "completed_at": "2026-10-16T14:13:34Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/check-runs/117016333729",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000309,
+      "runner_name": "GitHub Actions 1000000309",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 117016821004,
+      "run_id": 38913844504,
+      "workflow_name": "TaskBoard Python DevSecOps CI/CD",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOUOfuMs8AAAAbPr79DA",
+      "head_sha": "e7449735e45dc77ce7b7230ab7393d09106ae9c8",
+      "url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/actions/jobs/117016821004",
+      "html_url": "https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504/job/117016821004",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-16T14:13:35Z",
+      "started_at": "2026-10-16T14:13:37Z",
+      "completed_at": "2026-10-16T14:13:45Z",
+      "name": "Helm Chart Validation & Kubernetes Deployment",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-16T14:13:38Z",
+          "completed_at": "2026-10-16T14:13:39Z"
+        },
+        {
+          "name": "Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-16T14:13:39Z",
+          "completed_at": "2026-10-16T14:13:41Z"
+        },
+        {
+          "name": "Install Helm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-16T14:13:41Z",
+          "completed_at": "2026-10-16T14:13:42Z"
+        },
+        {
+          "name": "Downcase repository owner",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-16T14:13:42Z",
+          "completed_at": "2026-10-16T14:13:42Z"
+        },
+        {
+          "name": "Helm Lint Chart",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-16T14:13:42Z",
+          "completed_at": "2026-10-16T14:13:42Z"
+        },
+        {
+          "name": "Helm Template Validation (Dry Run)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-16T14:13:42Z",
+          "completed_at": "2026-10-16T14:13:42Z"
+        },
+        {
+          "name": "Deploy to Remote Kubernetes Cluster",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-16T14:13:42Z",
+          "completed_at": "2026-10-16T14:13:43Z"
+        },
+        {
+          "name": "Post Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-16T14:13:43Z",
+          "completed_at": "2026-10-16T14:13:43Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-16T14:13:43Z",
+          "completed_at": "2026-10-16T14:13:43Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/NEERASA-VEDA-VARSHIT/Devops/check-runs/117016821004",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000310,
+      "runner_name": "GitHub Actions 1000000310",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

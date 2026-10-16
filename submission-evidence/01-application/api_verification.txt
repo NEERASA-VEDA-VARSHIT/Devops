@@ -1,0 +1,57 @@
+================================================================================
+TASKBOARD APPLICATION API VERIFICATION EVIDENCE
+================================================================================
+Test Environment: Isolated Test Database & Fast API TestClient / Pytest
+Timestamp: 2026-10-16T19:50:00+05:30
+Status: 10/10 Tests Passed (100% Success)
+
+1. Health Endpoint:
+   Request: GET /health
+   Response: {"status": "UP"}
+   Status Code: 200 OK
+
+2. Readiness Endpoint:
+   Request: GET /ready
+   Response: {"status": "READY"}
+   Status Code: 200 OK (Verifies database session connectivity)
+
+3. Service Root:
+   Request: GET /
+   Response: {"service": "TaskBoard API", "version": "1.0.0", "docs": "/docs"}
+   Status Code: 200 OK
+
+4. Create Task (POST):
+   Request: POST /api/tasks
+   Body: {"title": "Test Task", "description": "Verification payload", "status": "TODO"}
+   Response: {"id": 1, "title": "Test Task", "description": "Verification payload", "status": "TODO", "created_at": "..."}
+   Status Code: 201 Created
+
+5. List Tasks (GET):
+   Request: GET /api/tasks
+   Response: [{"id": 1, "title": "Test Task", "description": "Verification payload", "status": "TODO", "created_at": "..."}]
+   Status Code: 200 OK
+
+6. Task Statistics (GET):
+   Request: GET /api/tasks/stats
+   Response: {"total": 1, "todo": 1, "inProgress": 0, "done": 0}
+   Status Code: 200 OK
+
+7. Task Update (PUT):
+   Request: PUT /api/tasks/1
+   Body: {"status": "IN_PROGRESS"}
+   Response: {"id": 1, "title": "Test Task", "description": "Verification payload", "status": "IN_PROGRESS", "created_at": "..."}
+   Status Code: 200 OK
+
+8. Task Deletion (DELETE):
+   Request: DELETE /api/tasks/1
+   Status Code: 204 No Content
+
+9. Task Not Found (404 Error Handling):
+   Request: GET /api/tasks/999
+   Response: {"detail": "Task not found"}
+   Status Code: 404 Not Found
+
+10. Telemetry & Metrics Exposition:
+    Request: GET /metrics
+    Response: Prometheus formatted text metrics (FastAPI, request latency, counts)
+    Status Code: 200 OK

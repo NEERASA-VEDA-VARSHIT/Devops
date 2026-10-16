@@ -1,0 +1,56 @@
+================================================================================
+SESSION 21 DEVOPS CAPSTONE — LIVE DEMO & PRESENTATION SEQUENCE
+================================================================================
+Student: Neerasa Veda Varshit (24bcs10005)
+Repository: https://github.com/NEERASA-VEDA-VARSHIT/Devops
+Verified Release Commit: e7449735e45dc77ce7b7230ab7393d09106ae9c8
+GitHub Actions Run: https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504
+
+DEMO WALKTHROUGH STEPS:
+
+1. SOURCE CODE & REPOSITORY HYGIENE
+   - Open repository in VS Code.
+   - Show clean Git status with 0 unresolved submodules and 40+ meaningful commits.
+   - Show Dockerfiles for Backend and Frontend with multi-stage builds and non-root users.
+
+2. LOCAL RUN & POSTGRESQL PERSISTENCE (DOCKER COMPOSE)
+   - Execute: docker compose up --build -d
+   - Show 3 running services: postgres:16-alpine (healthy), backend:8000, frontend:3000.
+   - Demonstrate Alembic schema migration executing on startup.
+   - Open browser: http://localhost:3000 (React Frontend) and http://localhost:8000/docs (Swagger).
+   - Perform CRUD: Create task, update to "IN_PROGRESS", retrieve task stats, delete task.
+   - Demonstrate persistence: Restart backend container and show database records remain intact.
+
+3. AUTOMATED TESTING (PYTEST)
+   - Execute: python -m pytest -v --tb=short
+   - Show 10 test cases covering 6 distinct API endpoints passing 100% in ~2 seconds.
+
+4. AUTOMATED DEVSECOPS CI/CD PIPELINE (GITHUB ACTIONS)
+   - Show .github/workflows/devsecops-ci-cd.yml structure (3 sequential jobs).
+   - Show Job 1 (Backend Tests & Frontend Build): Runs Pytest and npm ci production build.
+   - Show Job 2 (Docker Build, Trivy Security Scan & GHCR Push):
+     * Builds multi-stage Alpine images.
+     * Runs Aqua Security Trivy with resilient DB mirror fallback.
+     * Enforces --severity HIGH,CRITICAL --exit-code 1.
+     * Zero HIGH / CRITICAL vulnerabilities detected.
+     * Publishes SHA-tagged images to ghcr.io/neerasa-veda-varshit/taskboard-backend & frontend.
+   - Show Job 3 (Helm Chart Validation & Deployment):
+     * Validates Helm chart syntax with helm lint (0 errors).
+     * Dry-runs template rendering with ingress and production values.
+
+5. INFRASTRUCTURE AS CODE (TERRAFORM)
+   - Open final-devops-project/terraform/
+   - Show versions.tf with AWS provider >= 5.0.0 and .terraform.lock.hcl committed.
+   - Show main.tf defining AWS VPC (10.20.0.0/16, multi-AZ, public/private subnets, NAT Gateway) and EKS Cluster v1.31.
+   - Run: terraform fmt -check -recursive (passes with 0 formatting discrepancies).
+   - Run: terraform validate (Success! The configuration is valid).
+
+6. KUBERNETES PACKAGING (HELM)
+   - Open final-devops-project/helm/taskboard/
+   - Show templates: Deployments (2 replicas), Services (ClusterIP), Ingress (taskboard.local), PostgreSQL PVC, HPA (60% CPU), ServiceMonitor.
+   - Run: helm lint final-devops-project/helm/taskboard (0 chart failures).
+
+7. TELEMETRY & OBSERVABILITY (PROMETHEUS)
+   - Show /metrics endpoint on backend service instrumented with prometheus-fastapi-instrumentator.
+   - Show request duration histograms, latency percentiles, and HTTP status code counters.
+================================================================================
