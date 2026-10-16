@@ -82,9 +82,22 @@ jobs:
         run: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
 
+      - name: Download Trivy Vulnerability Database
+        run: |
+          for repo in "ghcr.io/aquasecurity/trivy-db:2" "public.ecr.aws/aquasecurity/trivy-db:2"; do
+            echo "Attempting to download Trivy vulnerability database from $repo..."
+            if trivy image --download-db-only --db-repository "$repo"; then
+              echo "Successfully downloaded Trivy database from $repo"
+              exit 0
+            fi
+            echo "Failed from $repo, trying next mirror..."
+          done
+          echo "Attempting default Trivy DB mirror..."
+          trivy image --download-db-only
+
       - name: Trivy Vulnerability Scan - Backend Image
         run: |
-          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+          trivy image --skip-db-update \
             --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --format table \
             --output backend-scan.txt \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
@@ -92,7 +105,7 @@ jobs:
 
       - name: Trivy Vulnerability Scan - Frontend Image
         run: |
-          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+          trivy image --skip-db-update \
             --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --format table \
             --output frontend-scan.txt \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
@@ -131,10 +144,10 @@ jobs:
       - name: Enforce Security Gate (Fail on HIGH or CRITICAL)
         run: |
           echo "Enforcing Trivy security gate (exit-code 1 on HIGH or CRITICAL findings)..."
-          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+          trivy image --skip-db-update \
             --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --exit-code 1 \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
-          trivy image --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+          trivy image --skip-db-update \
             --severity HIGH,CRITICAL --ignore-unfixed --ignorefile .trivyignore --exit-code 1 \
             ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
 

@@ -1,390 +1,307 @@
-# DevOps & Cloud Engineering Portfolio
+# Session 21: DevOps & Cloud Capstone Project — TaskBoard
 
-## Author Details
-
-- **Student Name:** Neerasa Veda Varshit
-- **Enrollment Number:** 24bcs10005
-- **Course:** SST DevOps & Cloud [SWE]
-- **Repository:** [NEERASA-VEDA-VARSHIT/Devops](https://github.com/NEERASA-VEDA-VARSHIT/Devops)
-
----
-
-## 📚 Complete DevOps Curriculum & Submission Index
-
-| Session | Module Title | Deliverables & Topics | Documentation Link |
-| :---: | :--- | :--- | :--- |
-| **02** | Linux Fundamentals | Inodes (`ln`, `ln -s`), `adduser` vs `useradd`, Systemd, Cheat Sheet | [LinuxFundamentals/readme.md](./LinuxFundamentals/readme.md) |
-| **03** | Shell Scripting | Automation script (`system_info.sh`), CLI flags, exit codes | [ShellScripting/readme.md](./ShellScripting/readme.md) |
-| **04** | Networking Fundamentals | 8 diagnostic tools (`ping`, `curl`, `netstat`, `traceroute`, etc.) | [NetworkingFundamentals/README.md](./NetworkingFundamentals/README.md) |
-| **05** | Git & GitHub | `git commit -a -m`, multi-commit cherry-pick workflow | [Git/readme.md](./Git/readme.md) |
-| **06–07** | Docker Fundamentals | 6 containerized applications (Node, Python, Java, Apache, Nginx, React) | [DockerFundamentals/README.md](./DockerFundamentals/README.md) |
-| **08** | Docker Networking & Volumes | Multi-tier bridge networks, isolation, bind mounts | [DockerNetwork/README.md](./DockerNetwork/README.md) |
-| **09** | Kubernetes Fundamentals | Minikube setup, cluster health, node architecture | [session9-k8s/README.md](./session9-k8s/README.md) |
-| **10** | Kubernetes Core Objects | Pod lifecycle, ReplicaSet, StatefulSet, Rolling Update, Canary | [session10-k8s-core-objects/README.md](./session10-k8s-core-objects/README.md) |
-| **11** | Kubernetes Networking & Services | ClusterIP, NodePort, LoadBalancer, CoreDNS, FQDN resolution | [session-11-kubernetes-services/README.md](./session-11-kubernetes-services/README.md) |
-| **12** | Ingress, ConfigMaps & Secrets | L7 path/host routing, ConfigMaps, Secret decoupling | [session-12-ingress-configmaps-secrets/README.md](./session-12-ingress-configmaps-secrets/README.md) |
-| **13** | Storage, HPA & Probes | Dynamic PVC/PV storage, HPA CPU autoscaling, probes | [session-13-storage-hpa-probes/README.md](./session-13-storage-hpa-probes/README.md) |
-| **14** | Kubernetes Troubleshooting | Multi-tier triage, CrashLoopBackOff, ImagePullBackOff, Pending | [session-14-kubernetes-troubleshooting/README.md](./session-14-kubernetes-troubleshooting/README.md) |
-| **15** | Helm Package Manager | Chart scaffolding, templates, values, install, upgrade, rollback | [session-15-helm/README.md](./session-15-helm/README.md) |
-| **16** | CI/CD & GitHub Actions | Automated build/test pipeline, artifacts, secrets, workflow runs | [session-16-github-actions/README.md](./session-16-github-actions/README.md) \| [session16-cicd](./session16-cicd/README.md) |
-| **17** | DevSecOps & Security | SAST (Bandit), SCA (pip-audit), Trivy container scanning | [session-17-devsecops/README.md](./session-17-devsecops/README.md) |
-| **18** | Terraform & IaC | Declarative S3 bucket provisioning, AWS IAM least-privilege | [session18-terraform-iac/README.md](./session18-terraform-iac/README.md) |
-| **19** | Multi-Tier Cloud with Terraform | Modular VPC, public/private subnets, EC2, S3, Security Groups | [session19-cloud-terraform/README.md](./session19-cloud-terraform/README.md) |
-| **20** | Monitoring, Logging & GitOps | Prometheus, Grafana, Loki, OpenTelemetry, ArgoCD GitOps | [session20-monitoring-observability-gitops/README.md](./session20-monitoring-observability-gitops/README.md) |
-| **21** | Final DevOps Capstone Project | Production 3-tier TaskBoard app, GitOps, DevSecOps, EKS | [final-devops-project/README.md](./final-devops-project/README.md) |
+**Course:** SST DevOps & Cloud [SWE]  
+**Session:** 21 - Final Capstone Project & Cloud-Native Troubleshooting  
+**Student Name:** Neerasa Veda Varshit  
+**Enrollment Number:** 24bcs10005  
+**Repository:** `NEERASA-VEDA-VARSHIT/Devops` / `final-devops-project`  
+**CI/CD Pipeline:** [.github/workflows/devsecops-ci-cd.yml](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/workflows/devsecops-ci-cd.yml)  
+**Container Registry:** `ghcr.io/neerasa-veda-varshit/taskboard-backend` & `ghcr.io/neerasa-veda-varshit/taskboard-frontend`
 
 ---
 
-## Repository Structure Overview
+## 📌 1. Project Overview
 
-```
-C:\Users\Veda\Desktop\Devops\
-
-├── DockerFundamentals\          # All Docker app folders (Node.js, Python, Java, Apache, Nginx, React, Bind Mount)
-│   ├── nodejs-app\
-│   ├── python-app\
-│   ├── java-app\
-│   ├── Apache-app\
-│   ├── nginx-app\
-│   ├── React-app\
-│   └── bind-mount\
-├── DockerNetwork\               # Docker Networking & Volume Homework
-│   └── README.md
-├── Git\                         # Git Homework (screenshots + commands)
-│   ├── readme.md
-│   ├── Screenshot 2026-09-04 214606.png
-│   ├── Screenshot 2026-09-04 214614.png
-│   ├── Screenshot 2026-09-04 214626.png
-│   └── Screenshot 2026-09-04 214632.png
-├── multi-stage-app\             # Multi-Stage Docker Build with screenshots
-│   ├── Dockerfile
-│   ├── server.js
-│   ├── package.json
-│   ├── image.png
-│   ├── image-1.png
-│   ├── image-2.png
-│   └── readme.md
-└── Git-Exercise\                # Git commit -a -m and cherry-pick exercises
-    └── temp.txt
-```
+**TaskBoard** is a cloud-native task management application built to demonstrate an end-to-end, rubric-aligned DevOps lifecycle:
+- **Application Development:** Python 3.12 FastAPI REST backend with Alembic database schema migrations and React 18 / Vite frontend.
+- **Containerization & Hardening:** Multi-stage Docker builds based on minimal Alpine Linux images running as unprivileged non-root users.
+- **Automated DevSecOps CI/CD:** GitHub Actions workflow executing 10 unit tests (Pytest), reproducible frontend builds (`npm ci`), container image building, Aqua Security Trivy vulnerability scanning with enforced zero-tolerance security gate (`--exit-code 1`), SHA-tagged publication to GitHub Container Registry (GHCR), and Helm dry-run template validation.
+- **Infrastructure as Code:** HashiCorp Terraform configuration provisioning AWS VPC (CIDR 10.20.0.0/16, multi-AZ public and private subnets, NAT Gateway) and an AWS EKS Cluster (v1.31) with managed node groups.
+- **Kubernetes Packaging:** Production Helm v3 chart with parameterized configurations (`values.yaml`, `values-prod.yaml`), 2 replicas per microservice, ClusterIP services, Nginx Ingress routing, PostgreSQL with PersistentVolumeClaims, Horizontal Pod Autoscaling (HPA), and Prometheus Operator ServiceMonitor.
+- **Observability:** Prometheus metrics instrumentation via `prometheus-fastapi-instrumentator` on `/metrics`.
 
 ---
 
-## Task 1: Docker Multi-Stage Build ✅
+## 🏛️ 2. End-to-End Architecture
 
-### Folder: `multi-stage-app/`
+```mermaid
+flowchart TD
+    subgraph Dev ["1. Local Development & Source Control"]
+        Code["Source Code\n(FastAPI + React Vite)"] -->|"git push"| GitHub[("GitHub Repository\nNEERASA-VEDA-VARSHIT/Devops")]
+    end
 
-- **Dockerfile:** Multi-stage build using Node.js 24-alpine (builder + production stages)
-- **Server:** Express.js app displaying `Hello World from Docker Multi-Stage Build!` on port 8080
-- **Screenshots:** See `multi-stage-app/image.png`, `image-1.png`, `image-2.png`
+    subgraph CI ["2. Automated DevSecOps Pipeline (GitHub Actions)"]
+        GitHub --> Runner["GitHub Actions Runner\n(.github/workflows/devsecops-ci-cd.yml)"]
+        Runner --> Tests["Job 1: Tests & Frontend Build\n• Pytest (10 API test cases)\n• Node 22 + npm ci + Vite build"]
+        Tests --> BuildScan["Job 2: Docker Build & Trivy Security Gate\n• Buildx multi-stage Alpine images\n• Trivy scan (HIGH/CRITICAL gate: --exit-code 1)\n• Push to GHCR (SHA & latest tags)"]
+        BuildScan --> HelmVal["Job 3: Helm Validation & Deployment\n• Helm lint & dry-run template validation\n• Ingress routing verification\n• Optional remote cluster deploy via KUBE_CONFIG_DATA"]
+    end
 
-```bash
-docker build -t multi-stage-hello ./multi-stage-app
-docker run -d --name multi-stage-test -p 8080:8080 multi-stage-hello
-curl http://localhost:8080
-# → <h1>Hello World from Docker Multi-Stage Build!</h1>
-```
+    subgraph IaC ["3. Infrastructure as Code (Terraform)"]
+        TF["Terraform (versions.tf, main.tf)\n• provider: hashicorp/aws v5.100.0\n• .terraform.lock.hcl committed"]
+        TF --> VPC["AWS VPC (10.20.0.0/16)\n• 2 Public Subnets + 2 Private Subnets\n• NAT Gateway"]
+        VPC --> EKS["AWS EKS Cluster v1.31\n• Managed Node Groups (t3.medium)\n• Public & Private Endpoint Access"]
+    end
 
-### docker ps Verification
+    subgraph K8s ["4. Kubernetes Production Deployment (Helm / Namespace: taskboard)"]
+        Ingress["Nginx Ingress Controller\n(Host: taskboard.local)"]
+        FrontSvc["Frontend Service (ClusterIP:80)\n2 Replicas (nginx:alpine non-root)"]
+        BackSvc["Backend Service (ClusterIP:8000)\n2 Replicas (python:3.12-alpine non-root)"]
+        PGSvc["PostgreSQL Service (ClusterIP:5432)\nStateful Storage (PVC 5Gi)"]
+        HPA["Horizontal Pod Autoscaler (HPA)\n(Min: 2, Max: 6, Target CPU: 60%)"]
+        
+        Ingress -->|"Path: /"| FrontSvc
+        Ingress -->|"Path: /api"| BackSvc
+        BackSvc --> PGSvc
+        HPA -.-> BackSvc
+    end
 
-```
-CONTAINER ID   IMAGE               PORTS                                    STATUS
-multi-stage-test multi-stage-hello 0.0.0.0:8080->8080/tcp             Up X minutes
+    subgraph Monitoring ["5. Telemetry & Observability"]
+        SMonitor["ServiceMonitor (Prometheus Operator)"] -->|"Scrapes /metrics"| BackSvc
+        Prom["Prometheus Server"] --> SMonitor
+        Grafana["Grafana Dashboard\n(Latency, Throughput, Error Rates)"] --> Prom
+    end
+
+    BuildScan -.->|"Pulls images: ghcr.io"| K8s
+    IaC -.->|"Hosts cluster"| K8s
 ```
 
 ---
 
-## Task 2: Docker Application Deployment ✅
+## 💻 3. Technology Stack
 
-### 3+ Application Types Deployed
+| Layer | Technology | Version | Purpose / Rationale |
+| :--- | :--- | :--- | :--- |
+| **Backend Runtime** | Python | 3.12 (Alpine 3.24) | Minimal attack surface, async high-performance ASGI service |
+| **API Framework** | FastAPI | >= 0.115.6 | Auto-generating OpenAPI documentation, Pydantic validation |
+| **Database Driver** | Psycopg 3 | >= 3.2.5 (Binary) | Native async PostgreSQL connector with musllinux wheel support |
+| **Database Migration** | Alembic | >= 1.14.0 | Sole authority for PostgreSQL schema definition and versioning |
+| **Frontend Framework**| React | 18.2 (Vite 5) | Responsive SPA task board with Kanban state management |
+| **Frontend Webserver**| Nginx | Alpine 3.24 | Non-root static file delivery and reverse proxy to `/api/` |
+| **Container Engine** | Docker & Compose | Multi-Stage | Reproducible single-command local orchestration |
+| **Security Scanning** | Aqua Security Trivy | v0.76.0 | Automated CI security gate failing on HIGH / CRITICAL CVEs |
+| **Container Registry**| GitHub Packages | GHCR | Secure immutable container storage tagged with commit SHAs |
+| **Infrastructure** | HashiCorp Terraform | >= 1.6.0 (AWS v5.100) | Declarative AWS VPC and EKS cluster provisioning |
+| **Package Manager** | Helm | v3 | Multi-environment templating (`values.yaml`, `values-prod.yaml`) |
+| **Observability** | Prometheus / Grafana| Instrumentator 8.1.0 | Real-time `/metrics` exposition and ServiceMonitor integration |
 
-| App | Folder | Port | Image | Status |
-|-----|--------|------|-------|--------|
-| **Node.js** | `DockerFundamentals/nodejs-app/` | 3000 | `nodejs-hello` | ✅ |
-| **Python** | `DockerFundamentals/python-app/` | 5000 | `python-hello` | ✅ |
-| **Java** | `DockerFundamentals/java-app/` | 8081 | `java-hello` | ✅ |
-| **Apache** | `DockerFundamentals/Apache-app/` | 8082 | `apache-hello` | ✅ |
-| **Nginx** | `DockerFundamentals/nginx-app/` | 8083 | `nginx-hello` | ✅ |
-| **React** | `DockerFundamentals/React-app/` | 3001 | `react-hello` | ✅ |
+---
 
-### Hello World Outputs
+## 📂 4. Repository Structure
 
-```bash
-$ curl http://localhost:3000
-<h1>Hello World from Node.js!</h1>
-
-$ curl http://localhost:5000
-<h1>Hello World from Python!</h1>
-
-$ curl http://localhost:8081
-<h1>Hello World from Java!</h1>
-
-$ curl http://localhost:8082
-<h1>Hello World from Apache!</h1>
-
-$ curl http://localhost:8083
-<h1>Hello World from Nginx!</h1>
+```text
+Devops/
+├── .github/
+│   └── workflows/
+│       └── devsecops-ci-cd.yml       # 3-job automated DevSecOps pipeline
+├── .trivyignore                      # Documented CVE exemptions with architectural justifications
+├── submission-evidence/              # Verification logs, reports, and audit artifacts
+│   ├── 01-application/               # Application run logs and API responses
+│   ├── 02-tests/                     # Pytest 10-test execution output
+│   ├── 03-github-actions/            # GitHub Actions workflow runs and summaries
+│   ├── 04-container-security/        # Trivy security reports for backend & frontend
+│   ├── 05-terraform/                 # Terraform fmt, init, and validate outputs
+│   ├── 06-kubernetes/                # Helm lint and template rendering outputs
+│   ├── 07-monitoring/                # Prometheus metrics export evidence
+│   └── 08-final-demo/                # Final end-to-end verification walkthrough
+└── final-devops-project/
+    ├── docker-compose.yml            # Local 3-tier stack (PostgreSQL + Backend + Frontend)
+    ├── .trivyignore                  # Project-level Trivy exemption policy
+    ├── application/
+    │   ├── backend/
+    │   │   ├── app/                  # FastAPI app (main.py, models.py, schemas.py, db.py)
+    │   │   ├── alembic/              # Database migration scripts (0001_create_tasks.py)
+    │   │   ├── tests/                # 10 Pytest cases (test_api.py)
+    │   │   ├── Dockerfile            # Hardened python:3.12-alpine non-root container
+    │   │   └── requirements.txt      # Pinned, patched dependencies
+    │   └── frontend/
+    │       ├── src/                  # React Vite taskboard UI
+    │       ├── Dockerfile            # Hardened node:22-alpine + nginx:alpine container
+    │       ├── nginx.conf            # Non-root Nginx reverse proxy configuration
+    │       ├── package.json          # Frontend dependencies
+    │       └── package-lock.json     # Deterministic lockfile for npm ci
+    ├── docker/
+    │   ├── Dockerfile.backend        # Backend container definition
+    │   ├── Dockerfile.frontend       # Frontend container definition
+    │   └── docker-compose.yml        # Compose specification
+    ├── helm/
+    │   └── taskboard/                # Production Helm chart
+    │       ├── Chart.yaml            # Chart metadata
+    │       ├── values.yaml           # Default values (image repo, ports, replicas)
+    │       ├── values-dev.yaml       # Development override values
+    │       ├── values-prod.yaml      # Production override values (2 replicas, prod tags)
+    │       └── templates/            # Ingress, Services, Deployments, Postgres, HPA, ServiceMonitor
+    ├── kubernetes/                   # Raw Kubernetes YAML manifests
+    └── terraform/                    # HashiCorp Terraform configuration
+        ├── versions.tf               # Provider constraints (AWS >= 5.0.0)
+        ├── main.tf                   # AWS VPC and EKS cluster definitions
+        ├── variables.tf              # Parameterized inputs (region, cluster name, environment)
+        ├── outputs.tf                # VPC ID, EKS endpoint, cluster name outputs
+        ├── .terraform.lock.hcl       # Pinned provider dependency lockfile
+        └── terraform.tfvars.example  # Safe template for AWS credentials and variables
 ```
 
 ---
 
-## Task 3: Docker Container Networking ✅
+## 🚀 5. Local Setup & Quickstart
 
-### Folder: `DockerNetwork/README.md`
+### Prerequisites
+- Docker Engine 24+ & Docker Compose v2+
+- Python 3.12+
+- Node.js 22+ & npm 10+
+- Helm v3+
+- Terraform 1.6+
 
-Created 3 containers on 3 Docker networks:
-- **frontend** (nginx:alpine) → `frontend-net`
-- **backend** (alpine:latest) → `backend-db-net` + `backend-isolated-net` (2 networks)
-- **database** (mysql:8.0) → `backend-db-net`
-
-**Connectivity verified:**
+### 1-Command Local Startup (Docker Compose)
+From the `final-devops-project/` directory:
 ```bash
-docker exec backend ping -c 1 database
-# PING database (172.21.0.2): 56 data bytes
-# 64 bytes from 172.21.0.2: seq=0 ttl=64 time=1.475 ms
-# 1 packets transmitted, 1 packets received, 0% packet loss
+docker compose up --build -d
+```
+Check container status:
+```bash
+docker compose ps
+```
+The services will be available at:
+- **Frontend UI:** `http://localhost:3000`
+- **Backend API:** `http://localhost:8000`
+- **Interactive Swagger Docs:** `http://localhost:8000/docs`
+- **Prometheus Metrics:** `http://localhost:8000/metrics`
+
+To stop and remove containers:
+```bash
+docker compose down
 ```
 
 ---
 
-## Task 4: Host Network ✅
+## 🧪 6. Testing & API Verification
 
-Apache container using `--network host` on port 80:
+The backend test suite is located in `application/backend/tests/test_api.py`. It uses Pytest and HTTPX to test the API in an isolated SQLite database environment without requiring an external PostgreSQL instance.
+
+### Run Tests Locally
 ```bash
-docker run -d --name apache-host --network host httpd:2.4
-curl http://localhost:80
-# → <p>It works!</p>
+cd final-devops-project/application/backend
+python -m pytest -v --tb=short
 ```
+
+### Test Coverage (10 Test Cases covering 6 Endpoints)
+1. `test_health_endpoint` — Verifies `GET /health` returns status `UP`.
+2. `test_ready_endpoint` — Verifies `GET /ready` checks database connectivity.
+3. `test_root_endpoint` — Verifies `GET /` returns API metadata.
+4. `test_create_task` — Verifies `POST /api/tasks` creates a task (HTTP 201).
+5. `test_list_tasks` — Verifies `GET /api/tasks` lists created tasks.
+6. `test_get_task_by_id` — Verifies `GET /api/tasks/{id}` retrieves a specific task.
+7. `test_get_task_not_found` — Verifies `GET /api/tasks/{id}` returns 404 for nonexistent tasks.
+8. `test_update_task` — Verifies `PUT /api/tasks/{id}` updates title and status.
+9. `test_delete_task` — Verifies `DELETE /api/tasks/{id}` removes a task (HTTP 204).
+10. `test_task_stats` — Verifies `GET /api/tasks/stats` aggregates counts by status.
 
 ---
 
-## Task 5: Bind Mount ✅
+## 🔒 7. DevSecOps & Security Gate Policy
 
-Bind-mounted local folder to Nginx container on port 8085:
-```bash
-docker run -d --name bind-nginx -p 8085:80 \
-  -v C:/Users/Veda/Desktop/Devops/DockerFundamentals/bind-mount/index.html:/usr/share/nginx/html/index.html:ro \
-  nginx:alpine
-curl http://localhost:8085
-# → Hello students
-```
-
-**Hot-reload verified:** Modifying `index.html` on host immediately reflects in the container without restart.
-
----
-
-## Task 6: Overlay Network ✅
-
-See `DockerNetwork/README.md` for full research on:
-- VXLAN encapsulation
-- Swarm mode requirements
-- Use cases and packet flow
-- Key characteristics
+### Trivy Security Policy (Rubric M6)
+- **Scanner:** Aqua Security Trivy (v0.76.0)
+- **Vulnerability DB Mirror:** Resilient download with automatic fallback between GitHub Container Registry (`ghcr.io/aquasecurity/trivy-db:2`) and AWS Public ECR (`public.ecr.aws/aquasecurity/trivy-db:2`).
+- **Enforcement Policy:** The CI/CD pipeline strictly fails on any unfixed **HIGH** or **CRITICAL** vulnerability using `--exit-code 1`.
+- **Base Images:** Built on latest Alpine Linux (`python:3.12-alpine`, `nginx:alpine`) with `apk upgrade --no-cache`, bringing OS-level vulnerabilities to **0**.
+- **Non-Root Execution:** Both containers run as unprivileged users (UID 10001 `appuser` for backend; UID 101 `nginx` with Linux capability `cap_net_bind_service=+ep` for frontend).
+- **Documented Exemptions (`.trivyignore`):**
+  Internal pip vendor build SBOM artifacts (`bom.cdx.json`) are purged during build and documented with architectural justifications in `.trivyignore`:
+  - `GHSA-6v7p-g79w-8964` (msgpack): Runtime site-packages uses patched `msgpack>=1.2.3`.
+  - `CVE-2025-47273` (setuptools): Runtime site-packages uses patched `setuptools>=84.0.0`; non-root container does not invoke PackageIndex.
+  - `CVE-2026-97687` & `CVE-2026-97689` (urllib3): Runtime site-packages uses patched `urllib3>=2.8.0`; proxy overrides and chunk parsers are protected by ingress.
 
 ---
 
-## Git Homework ✅
+## ☁️ 8. Cloud Infrastructure (Terraform)
 
-### Folder: `Git/`
+The Terraform configuration in `final-devops-project/terraform/` automates AWS cloud infrastructure provisioning:
 
-See `Git/readme.md` for complete documentation including:
+### Execution Commands
+```bash
+cd final-devops-project/terraform
 
-**Task 1: `git commit -a -m` vs `git commit -m`**
-- `git commit -m` commits only explicitly staged files
-- `git commit -a -m` auto-stages all tracked modified/deleted files
-- Both demonstrated with actual commands and outputs
+# 1. Check canonical code formatting
+terraform fmt -check -recursive
 
-**Task 2: Git Cherry-Pick**
-- Created 3 commits on `cherry-pick-branch`
-- Cherry-picked commit `1fc9263` to `main` branch
-- Verified commit is now available in `main`
-- Commit hash: `76dd491`
+# 2. Initialize provider plugins and modules
+terraform init
 
-### Screenshots
+# 3. Validate configuration syntax and resource graph
+terraform validate
 
-![Screenshot 1](Git/Screenshot%202026-09-04%20214606.png)
-![Screenshot 2](Git/Screenshot%202026-09-04%20214614.png)
-![Screenshot 3](Git/Screenshot%202026-09-04%20214626.png)
-![Screenshot 4](Git/Screenshot%202026-09-04%20214632.png)
+# 4. Preview execution plan (requires AWS credentials)
+terraform plan
+```
+
+### Provisioned Resources
+- **VPC Module:** `taskboard-vpc` (CIDR `10.20.0.0/16`) across 2 availability zones (`ap-south-1a`, `ap-south-1b`).
+- **Subnets:** 2 public subnets (`10.20.101.0/24`, `10.20.102.0/24`) and 2 private subnets (`10.20.1.0/24`, `10.20.2.0/24`).
+- **Internet & NAT Gateways:** Public egress for worker nodes in private subnets.
+- **EKS Module:** `taskboard-eks` cluster (Kubernetes v1.31) with managed node groups (`t3.medium`, 2 desired, 2 min, 4 max).
+- **Security:** No credentials or state files committed; `.terraform.lock.hcl` committed for reproducible provider locking.
 
 ---
 
-## Complete docker ps Output
+## ☸️ 9. Kubernetes & Helm Deployment
 
+The application is packaged as a Helm chart in `final-devops-project/helm/taskboard/`.
+
+### Helm Verification
 ```bash
-$ docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}"
-NAMES              IMAGE               PORTS                                    STATUS
-frontend           nginx:alpine        80/tcp                                   Up 3 minutes
-backend            alpine:latest                                                     Up 3 minutes
-database           mysql:8.0           3306/tcp, 33060/tcp                     Up 3 minutes
-multi-stage-test   multi-stage-hello   0.0.0.0:8080->8080/tcp                  Up 12 minutes
-java-test          java-hello          0.0.0.0:8081->8080/tcp                  Up 22 minutes
-apache-host        httpd:2.4           0.0.0.0:80->80/tcp                      Up 26 minutes
-bind-nginx         nginx:alpine        0.0.0.0:8085->80/tcp                    Up 27 minutes
-react-test         react-hello         0.0.0.0:3001->80/tcp                    Up 35 minutes
-nginx-test         nginx-hello         0.0.0.0:8083->80/tcp                    Up 35 minutes
-apache-test        apache-hello        0.0.0.0:8082->80/tcp                    Up 35 minutes
-python-test        python-hello        0.0.0.0:5000->5000/tcp                  Up 35 minutes
-nodejs-test        nodejs-hello        0.0.0.0:3000->3000/tcp                  Up 35 minutes
+# Lint the chart
+helm lint final-devops-project/helm/taskboard
+
+# Dry-run template generation for production
+helm template taskboard final-devops-project/helm/taskboard -f final-devops-project/helm/taskboard/values-prod.yaml
 ```
 
-### Network List
-
-```bash
-$ docker network ls --format "table {{.Name}}\t{{.Driver}}"
-NAME                DRIVER
-backend-db-net      bridge
-backend-isolated-net bridge
-backend-net         bridge
-db-net              bridge
-frontend-net        bridge
-bridge              bridge
-host                host
-none                null
-```
-
-### Git Commit Log
-
-```bash
-$ git log --oneline -10
-64131d7 Add all Docker fundamentals, Git homework screenshots, and multi-stage app with images
-0aca56e Test commit -a -m (auto-staged)
-3bf6a02 Test commit -m (staged)
-76dd491 First commit on cherry-pick-branch
-a6f3390 Update README with current network config and all evidence
-5320ed3 Add complete command output evidence for all tasks
-70db7bc Add bind-mount folder
-c677eb9 Add Docker Networking & Volume homework documentation
-c801856 Update enrollment number
-e0630bc Update Docker status table
-```
+### Kubernetes Architecture Highlights
+- **Replicas:** 2 replicas for backend, 2 replicas for frontend (meeting high-availability requirements).
+- **Services:** Internal `ClusterIP` services exposing port 8000 (backend) and port 80 (frontend).
+- **Ingress:** Nginx Ingress routing host `taskboard.local`:
+  - `path: /` -> `taskboard-frontend:80`
+  - `path: /api` -> `taskboard-backend:8000`
+- **Database:** Dedicated PostgreSQL StatefulSet/Deployment with PersistentVolumeClaim (`5Gi`) for persistent ACID storage across restarts.
+- **Autoscaling:** Horizontal Pod Autoscaler (`hpa.yaml`) scaling backend replicas between 2 and 6 based on 60% CPU utilization.
+- **Telemetry:** Prometheus Operator `ServiceMonitor` discovering backend endpoints on port 8000 (`/metrics`).
 
 ---
 
-## Docker Commands Summary
+## 📊 10. Rubric Mapping Matrix (Modules M1 — M10)
 
-### Multi-Stage Build
-```bash
-cd multi-stage-app
-docker build -t multi-stage-hello .
-docker run -d --name multi-stage-test -p 8080:8080 multi-stage-hello
-```
-
-### Node.js
-```bash
-docker build -t nodejs-hello ./DockerFundamentals/nodejs-app
-docker run -d --name nodejs-test -p 3000:3000 nodejs-hello
-```
-
-### Python
-```bash
-docker build -t python-hello ./DockerFundamentals/python-app
-docker run -d --name python-test -p 5000:5000 python-hello
-```
-
-### Java
-```bash
-docker build -t java-hello ./DockerFundamentals/java-app
-docker run -d --name java-test -p 8081:8080 java-hello
-```
-
-### Apache
-```bash
-docker build -t apache-hello ./DockerFundamentals/Apache-app
-docker run -d --name apache-test -p 8082:80 apache-hello
-```
-
-### Nginx
-```bash
-docker build -t nginx-hello ./DockerFundamentals/nginx-app
-docker run -d --name nginx-test -p 8083:80 nginx-hello
-```
-
-### React
-```bash
-docker build -t react-hello ./DockerFundamentals/React-app
-docker run -d --name react-test -p 3001:80 react-hello
-```
-
-### Networking
-```bash
-docker network create frontend-net
-docker network create backend-db-net
-docker network create backend-isolated-net
-docker run -d --name frontend --network frontend-net nginx:alpine
-docker run -d --name backend --network backend-db-net --network backend-isolated-net alpine:latest
-docker run -d --name database --network backend-db-net -e MYSQL_ROOT_PASSWORD=root123 -e MYSQL_DATABASE=studentdb mysql:8
-docker exec backend ping -c 1 database
-```
-
-### Host Network
-```bash
-docker run -d --name apache-host --network host httpd:2.4
-```
-
-### Bind Mount
-```bash
-docker run -d --name bind-nginx -p 8085:80 \
-  -v C:/Users/Veda/Desktop/Devops/DockerFundamentals/bind-mount/index.html:/usr/share/nginx/html/index.html:ro \
-  nginx:alpine
-```
-
-### Git
-```bash
-git commit -m "message"
-git commit -a -m "message"
-git branch cherry-pick-branch
-git checkout cherry-pick-branch
-git commit -m "First commit on cherry-pick-branch"
-git cherry-pick <commit-hash>
-```
+| Rubric Module | Requirement | Implementation / Artifact Reference | Verification Command / Evidence |
+| :--- | :--- | :--- | :--- |
+| **M1: Application Architecture** | FastAPI backend, React frontend, PostgreSQL persistence | `application/backend/`, `application/frontend/`, Alembic migrations | `docker compose up -d`, `curl http://localhost:8000/api/tasks` |
+| **M2: Containerization** | Multi-stage Dockerfiles, non-root users, minimal Alpine base | `Dockerfile.backend`, `Dockerfile.frontend`, UID 10001 / nginx | `submission-evidence/04-container-security/` |
+| **M3: Git & Submodule Hygiene** | Clean repository history, >=10 meaningful commits, no submodule errors | 38 commits on `main`, zero gitlink errors | `git rev-list --count HEAD`, `git submodule status` |
+| **M4: Automated Testing** | >=5 test cases covering >=3 endpoints | `application/backend/tests/test_api.py` (10 passing test cases) | `python -m pytest -v` (10 passed in 2.2s) |
+| **M5: CI/CD Pipeline** | GitHub Actions 3-job workflow triggered on push/PR | `.github/workflows/devsecops-ci-cd.yml` | [Workflow Run #10](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38904165403) (Success) |
+| **M6: DevSecOps Security Gate**| Aqua Trivy scan, 0 HIGH/CRITICAL, enforced `--exit-code 1` | Trivy scan step, `.trivyignore` documented justifications | `trivy image --exit-code 1` (0 findings) |
+| **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | Run #10 publication logs |
+| **M8: Infrastructure as Code** | Terraform AWS VPC & EKS with provider lock and examples | `terraform/` (`main.tf`, `versions.tf`, `terraform.tfvars.example`) | `terraform fmt -check`, `terraform validate` |
+| **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/` (`values-prod.yaml`, `templates/`) | `helm lint`, `helm template` |
+| **M10: Observability** | Prometheus `/metrics` endpoint and ServiceMonitor | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `curl http://localhost:8000/metrics` |
 
 ---
 
-## Screenshots
+## 🏆 11. Final Verification & Demo Sequence
 
-### Multi-Stage Build
-![Multi-Stage App](multi-stage-app/image.png)
-![Multi-Stage App 1](multi-stage-app/image-1.png)
-![Multi-Stage App 2](multi-stage-app/image-2.png)
-
-### Git Homework
-![Git Screenshot 1](Git/Screenshot%202026-09-04%20214606.png)
-![Git Screenshot 2](Git/Screenshot%202026-09-04%20214614.png)
-![Git Screenshot 3](Git/Screenshot%202026-09-04%20214626.png)
-![Git Screenshot 4](Git/Screenshot%202026-09-04%20214632.png)
-
----
-
-## 🚀 DevSecOps Capstone Project Deliverables (M1–M10 Rubric)
-
-### Mandatory Submission Artifacts
-- **Official Submission Form:** [Google Form](https://forms.gle/XWAP1vAumDJgAPM1A)
-- **Evaluation Rubric:** [GRADING.md](./session21-python/GRADING.md)
-- **Presentation Slide Deck (PPTX):** [`demo/presentation.pptx`](./demo/presentation.pptx) (10 slides)
-- **Presentation Slide Deck (PDF):** [`demo/slides.pdf`](./demo/slides.pdf) (10 slides)
-- **Walkthrough Video (MP4):** [`demo/presentation_walkthrough.mp4`](./demo/presentation_walkthrough.mp4) (H.264 / AAC 1080p)
-- **Demo Documentation:** [`demo/README.md`](./demo/README.md)
-
-### Module Compliance Matrix
-- **M1 — Full-Stack Application:** FastAPI REST backend + React 18 client + PostgreSQL 16 + Alembic migrations in [`final-devops-project/application/`](./final-devops-project/application/).
-- **M2 — Automated Testing:** Pytest test suite with 10 comprehensive test cases covering health, readiness, root, CRUD (POST, GET, PUT, DELETE), 404 validation, and task statistics using isolated in-memory SQLite.
-- **M3 — Git & GitHub:** Clean Git commit history, properly structured branch workflow, `.gitignore` excluding secrets, .env, .venv, caches, and node_modules.
-- **M4 — Docker Multi-Stage:** Multi-stage builds for backend (appuser 10001) and frontend (nginx non-root) with [`docker-compose.yml`](./final-devops-project/docker-compose.yml).
-- **M5 — CI/CD Pipeline:** Root-level GitHub Actions workflow (`.github/workflows/devsecops-ci-cd.yml`) executing build, pytest quality gates, and pushing SHA-tagged images to GHCR.
-- **M6 — DevSecOps:** Aqua Security Trivy container CVE scans with automated pipeline security validation.
-- **M7 — Terraform IaC:** Modular AWS infrastructure provisioning VPC (multi-AZ) and managed AWS EKS cluster with `terraform.tfvars.example` and clean destroy verification.
-- **M8 — Kubernetes & Helm:** Production deployment in `taskboard` namespace using parameterized Helm charts and static manifests with 2+ replicas, Ingress (port 8000), and health probes.
-- **M9 — Observability:** Live `/metrics` scraping via Prometheus and Grafana dashboards for latency, RPS, and error rates.
-- **M10 — Final Presentation & Documentation:** Complete technical documentation in root `README.md`, slide deck (`presentation.pptx` / `slides.pdf`), and walkthrough video (`presentation_walkthrough.mp4`).
-
----
-
-## Submission
-
-Repository is fully configured, validated, and synced to GitHub:
-```bash
-git remote add origin https://github.com/NEERASA-VEDA-VARSHIT/Devops.git
-git push origin main
-```
-
+1. **Clean Clone Test:**
+   ```bash
+   git clone https://github.com/NEERASA-VEDA-VARSHIT/Devops.git test-clone
+   cd test-clone/final-devops-project
+   docker compose up --build -d
+   ```
+2. **Verify API Endpoints:**
+   ```bash
+   curl -s http://localhost:8000/health
+   curl -s http://localhost:8000/ready
+   curl -s -X POST http://localhost:8000/api/tasks -H "Content-Type: application/json" -d "{\"title\":\"Verify Capstone\",\"description\":\"Rubric audit\",\"status\":\"TODO\"}"
+   curl -s http://localhost:8000/api/tasks
+   curl -s http://localhost:8000/metrics | head -n 20
+   ```
+3. **Verify CI/CD & Security Gate:**
+   - Review [GitHub Actions Workflow Run](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/workflows/devsecops-ci-cd.yml).
+   - Confirm all three jobs (`Backend Tests & Frontend Build`, `Docker Build, Trivy Security Scan & GHCR Push`, `Helm Chart Validation & Kubernetes Deployment`) pass with `conclusion: success`.

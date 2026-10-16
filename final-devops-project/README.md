@@ -1,247 +1,307 @@
-# Session 21: Final DevOps Capstone Project — TaskBoard Enterprise
+# Session 21: DevOps & Cloud Capstone Project — TaskBoard
 
 **Course:** SST DevOps & Cloud [SWE]  
 **Session:** 21 - Final Capstone Project & Cloud-Native Troubleshooting  
 **Student Name:** Neerasa Veda Varshit  
 **Enrollment Number:** 24bcs10005  
-**Environment:** Windows 11 Home / Minikube v1.33+ / Docker / Terraform / Helm / ArgoCD / Prometheus  
-**Repository:** `NEERASA-VEDA-VARSHIT/Devops` / `final-devops-project`
+**Repository:** `NEERASA-VEDA-VARSHIT/Devops` / `final-devops-project`  
+**CI/CD Pipeline:** [.github/workflows/devsecops-ci-cd.yml](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/workflows/devsecops-ci-cd.yml)  
+**Container Registry:** `ghcr.io/neerasa-veda-varshit/taskboard-backend` & `ghcr.io/neerasa-veda-varshit/taskboard-frontend`
 
 ---
 
 ## 📌 1. Project Overview
 
-**TaskBoard** is a complete, production-grade cloud-native SaaS application designed to demonstrate the end-to-end journey of an enterprise software product: from local developer code, through automated security-gated CI/CD pipelines, to declaratively provisioned AWS infrastructure and a self-healing Kubernetes cluster monitored by Prometheus and Grafana.
+**TaskBoard** is a cloud-native task management application built to demonstrate an end-to-end, rubric-aligned DevOps lifecycle:
+- **Application Development:** Python 3.12 FastAPI REST backend with Alembic database schema migrations and React 18 / Vite frontend.
+- **Containerization & Hardening:** Multi-stage Docker builds based on minimal Alpine Linux images running as unprivileged non-root users.
+- **Automated DevSecOps CI/CD:** GitHub Actions workflow executing 10 unit tests (Pytest), reproducible frontend builds (`npm ci`), container image building, Aqua Security Trivy vulnerability scanning with enforced zero-tolerance security gate (`--exit-code 1`), SHA-tagged publication to GitHub Container Registry (GHCR), and Helm dry-run template validation.
+- **Infrastructure as Code:** HashiCorp Terraform configuration provisioning AWS VPC (CIDR 10.20.0.0/16, multi-AZ public and private subnets, NAT Gateway) and an AWS EKS Cluster (v1.31) with managed node groups.
+- **Kubernetes Packaging:** Production Helm v3 chart with parameterized configurations (`values.yaml`, `values-prod.yaml`), 2 replicas per microservice, ClusterIP services, Nginx Ingress routing, PostgreSQL with PersistentVolumeClaims, Horizontal Pod Autoscaling (HPA), and Prometheus Operator ServiceMonitor.
+- **Observability:** Prometheus metrics instrumentation via `prometheus-fastapi-instrumentator` on `/metrics`.
 
 ---
 
-## 2. End-to-End Architecture
+## 🏛️ 2. End-to-End Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Development ["1. Development & Version Control"]
-        Dev["Developer Laptop\n(VS Code / Cascadia Mono)"] -->|"git push"| GitHub[("GitHub Repository\nNEERASA-VEDA-VARSHIT/Devops")]
+    subgraph Dev ["1. Local Development & Source Control"]
+        Code["Source Code\n(FastAPI + React Vite)"] -->|"git push"| GitHub[("GitHub Repository\nNEERASA-VEDA-VARSHIT/Devops")]
     end
 
-    subgraph Pipeline ["2. Automated DevSecOps CI/CD"]
-        GitHub --> Actions["GitHub Actions Runner\n(devsecops-ci-cd.yml)"]
-        Actions --> UnitTests["Unit Tests & Coverage\n(pytest)"]
-        Actions --> SAST["SAST Code Security\n(Bandit / CodeQL)"]
-        Actions --> SCA["SCA Vulnerability Scan\n(pip-audit)"]
-        Actions --> Trivy["Container Vulnerability Scan\n(Aqua Security Trivy)"]
-        Actions --> GHCR["Container Registry\n(GHCR / Docker Hub)"]
+    subgraph CI ["2. Automated DevSecOps Pipeline (GitHub Actions)"]
+        GitHub --> Runner["GitHub Actions Runner\n(.github/workflows/devsecops-ci-cd.yml)"]
+        Runner --> Tests["Job 1: Tests & Frontend Build\n• Pytest (10 API test cases)\n• Node 22 + npm ci + Vite build"]
+        Tests --> BuildScan["Job 2: Docker Build & Trivy Security Gate\n• Buildx multi-stage Alpine images\n• Trivy scan (HIGH/CRITICAL gate: --exit-code 1)\n• Push to GHCR (SHA & latest tags)"]
+        BuildScan --> HelmVal["Job 3: Helm Validation & Deployment\n• Helm lint & dry-run template validation\n• Ingress routing verification\n• Optional remote cluster deploy via KUBE_CONFIG_DATA"]
     end
 
-    subgraph Infrastructure ["3. Cloud Infrastructure as Code"]
-        Terraform["Terraform Engine\n(terraform/)"] --> AWSVPC["AWS VPC (10.20.0.0/16)\nPublic & Private Subnets"]
-        AWSVPC --> EKS["AWS EKS Cluster\n(taskboard-eks)"]
+    subgraph IaC ["3. Infrastructure as Code (Terraform)"]
+        TF["Terraform (versions.tf, main.tf)\n• provider: hashicorp/aws v5.100.0\n• .terraform.lock.hcl committed"]
+        TF --> VPC["AWS VPC (10.20.0.0/16)\n• 2 Public Subnets + 2 Private Subnets\n• NAT Gateway"]
+        VPC --> EKS["AWS EKS Cluster v1.31\n• Managed Node Groups (t3.medium)\n• Public & Private Endpoint Access"]
     end
 
-    subgraph Runtime ["4. Kubernetes Production Cluster"]
-        ArgoCD["ArgoCD GitOps Operator\n(Continuous Reconciliation)"] -->|"Reconciles Desired State"| K8sWorkloads
+    subgraph K8s ["4. Kubernetes Production Deployment (Helm / Namespace: taskboard)"]
+        Ingress["Nginx Ingress Controller\n(Host: taskboard.local)"]
+        FrontSvc["Frontend Service (ClusterIP:80)\n2 Replicas (nginx:alpine non-root)"]
+        BackSvc["Backend Service (ClusterIP:8000)\n2 Replicas (python:3.12-alpine non-root)"]
+        PGSvc["PostgreSQL Service (ClusterIP:5432)\nStateful Storage (PVC 5Gi)"]
+        HPA["Horizontal Pod Autoscaler (HPA)\n(Min: 2, Max: 6, Target CPU: 60%)"]
         
-        subgraph K8sWorkloads ["Namespace: taskboard"]
-            Ingress["Nginx Ingress Controller\n(taskboard.local)"]
-            FrontSvc["Frontend Service\n(Port 80)"]
-            BackSvc["Backend Service\n(Port 8000)"]
-            PG["StatefulSet: PostgreSQL\n(PersistentVolumeClaim 10Gi)"]
-            HPA["Horizontal Pod Autoscaler\n(Min: 2, Max: 6, CPU: 60%)"]
-            
-            Ingress --> FrontSvc
-            Ingress --> BackSvc
-            FrontSvc --> FrontPods["Frontend Pods (React + Vite)"]
-            BackSvc --> BackPods["Backend Pods (FastAPI Python)"]
-            BackPods --> PG
-            HPA -.-> BackPods
-        end
+        Ingress -->|"Path: /"| FrontSvc
+        Ingress -->|"Path: /api"| BackSvc
+        BackSvc --> PGSvc
+        HPA -.-> BackSvc
     end
 
-    subgraph Observability ["5. Observability & Telemetry"]
-        Prom["Prometheus Server\n(Metrics Scraper)"] --> BackPods
-        Prom --> K8sWorkloads
-        Grafana["Grafana Dashboards\n(CPU, Latency, Error Rates)"] --> Prom
+    subgraph Monitoring ["5. Telemetry & Observability"]
+        SMonitor["ServiceMonitor (Prometheus Operator)"] -->|"Scrapes /metrics"| BackSvc
+        Prom["Prometheus Server"] --> SMonitor
+        Grafana["Grafana Dashboard\n(Latency, Throughput, Error Rates)"] --> Prom
     end
 
-    GHCR --> Runtime
-    Infrastructure --> Runtime
+    BuildScan -.->|"Pulls images: ghcr.io"| K8s
+    IaC -.->|"Hosts cluster"| K8s
 ```
 
 ---
 
-## 3. Technology Stack
+## 💻 3. Technology Stack
 
-| Layer | Technologies Selected | Rationale |
-| :--- | :--- | :--- |
-| **Frontend** | React 18, Vite, Responsive CSS | Modern, rapid SPA client with rich task boards and dark sidebar |
-| **Backend** | Python 3.12, FastAPI, SQLAlchemy | Asynchronous high-throughput REST API with automated OpenAPI docs |
-| **Database** | PostgreSQL 16, Alembic | ACID-compliant relational persistence with automated schema migrations |
-| **Containers** | Docker, Multi-Stage Builds | Minimal production attack surface (<60MB Alpine images) |
-| **CI/CD** | GitHub Actions, Trivy, Bandit | Automated shift-left DevSecOps with zero tolerance for high CVEs |
-| **Infrastructure**| HashiCorp Terraform | Declarative, reproducible AWS VPC and EKS provisioning |
-| **Packaging** | Helm v3 | Parameterized multi-environment releases (`values-dev`, `values-prod`) |
-| **GitOps** | ArgoCD | Git as single source of truth with automated drift self-healing |
-| **Monitoring** | Prometheus & Grafana | Time-series metrics collection, alerting, and rich operational dashboards |
+| Layer | Technology | Version | Purpose / Rationale |
+| :--- | :--- | :--- | :--- |
+| **Backend Runtime** | Python | 3.12 (Alpine 3.24) | Minimal attack surface, async high-performance ASGI service |
+| **API Framework** | FastAPI | >= 0.115.6 | Auto-generating OpenAPI documentation, Pydantic validation |
+| **Database Driver** | Psycopg 3 | >= 3.2.5 (Binary) | Native async PostgreSQL connector with musllinux wheel support |
+| **Database Migration** | Alembic | >= 1.14.0 | Sole authority for PostgreSQL schema definition and versioning |
+| **Frontend Framework**| React | 18.2 (Vite 5) | Responsive SPA task board with Kanban state management |
+| **Frontend Webserver**| Nginx | Alpine 3.24 | Non-root static file delivery and reverse proxy to `/api/` |
+| **Container Engine** | Docker & Compose | Multi-Stage | Reproducible single-command local orchestration |
+| **Security Scanning** | Aqua Security Trivy | v0.76.0 | Automated CI security gate failing on HIGH / CRITICAL CVEs |
+| **Container Registry**| GitHub Packages | GHCR | Secure immutable container storage tagged with commit SHAs |
+| **Infrastructure** | HashiCorp Terraform | >= 1.6.0 (AWS v5.100) | Declarative AWS VPC and EKS cluster provisioning |
+| **Package Manager** | Helm | v3 | Multi-environment templating (`values.yaml`, `values-prod.yaml`) |
+| **Observability** | Prometheus / Grafana| Instrumentator 8.1.0 | Real-time `/metrics` exposition and ServiceMonitor integration |
 
 ---
 
-## 4. Repository Structure
+## 📂 4. Repository Structure
 
 ```text
-final-devops-project/
-├── application/
-│   ├── backend/               # FastAPI application, Alembic migrations, Pytest tests
-│   └── frontend/              # React Vite client, responsive styles, nginx.conf
-├── docker/
-│   ├── Dockerfile.backend     # Multi-stage Python build
-│   ├── Dockerfile.frontend    # Multi-stage Node/Vite build with Nginx server
-│   └── docker-compose.yml     # Local developer stack (Frontend, Backend, Postgres)
-├── kubernetes/
-│   ├── namespace.yaml         # Dedicated taskboard namespace
-│   ├── backend-deployment.yaml# Backend Deployment with probes & resource limits
-│   ├── backend-service.yaml   # ClusterIP service on port 8000
-│   ├── frontend-deployment.yaml # Frontend Deployment
-│   ├── frontend-service.yaml  # ClusterIP service on port 80
-│   ├── postgres.yaml          # PostgreSQL StatefulSet & PVC (10Gi)
-│   ├── ingress.yaml           # Ingress routing rules for taskboard.local
-│   └── hpa.yaml               # Elastic autoscaling targeting 60% CPU
-├── helm/
-│   └── taskboard/             # Production Helm package with values-prod.yaml
-├── terraform/
-│   ├── versions.tf            # Terraform AWS provider specification
-│   ├── main.tf                # AWS VPC and EKS cluster definitions
-│   ├── variables.tf           # Parameterized cluster configurations
-│   └── outputs.tf             # Exports VPC ID, EKS endpoint, cluster name
+Devops/
 ├── .github/
 │   └── workflows/
-│       └── devsecops-ci-cd.yml# 7-stage automated DevSecOps CI/CD pipeline
-├── security/
-│   ├── trivy-scan.sh          # Container vulnerability gate script
-│   └── bandit.yaml            # SAST static analysis policy
-├── monitoring/
-│   ├── prometheus-values.yaml # Helm values for Prometheus operator
-│   └── servicemonitor.yaml    # Native scraping endpoint for FastAPI metrics
-├── gitops/
-│   └── argocd-application.yaml# Declarative continuous reconciliation manifest
-└── README.md                  # Master Capstone documentation
+│       └── devsecops-ci-cd.yml       # 3-job automated DevSecOps pipeline
+├── .trivyignore                      # Documented CVE exemptions with architectural justifications
+├── submission-evidence/              # Verification logs, reports, and audit artifacts
+│   ├── 01-application/               # Application run logs and API responses
+│   ├── 02-tests/                     # Pytest 10-test execution output
+│   ├── 03-github-actions/            # GitHub Actions workflow runs and summaries
+│   ├── 04-container-security/        # Trivy security reports for backend & frontend
+│   ├── 05-terraform/                 # Terraform fmt, init, and validate outputs
+│   ├── 06-kubernetes/                # Helm lint and template rendering outputs
+│   ├── 07-monitoring/                # Prometheus metrics export evidence
+│   └── 08-final-demo/                # Final end-to-end verification walkthrough
+└── final-devops-project/
+    ├── docker-compose.yml            # Local 3-tier stack (PostgreSQL + Backend + Frontend)
+    ├── .trivyignore                  # Project-level Trivy exemption policy
+    ├── application/
+    │   ├── backend/
+    │   │   ├── app/                  # FastAPI app (main.py, models.py, schemas.py, db.py)
+    │   │   ├── alembic/              # Database migration scripts (0001_create_tasks.py)
+    │   │   ├── tests/                # 10 Pytest cases (test_api.py)
+    │   │   ├── Dockerfile            # Hardened python:3.12-alpine non-root container
+    │   │   └── requirements.txt      # Pinned, patched dependencies
+    │   └── frontend/
+    │       ├── src/                  # React Vite taskboard UI
+    │       ├── Dockerfile            # Hardened node:22-alpine + nginx:alpine container
+    │       ├── nginx.conf            # Non-root Nginx reverse proxy configuration
+    │       ├── package.json          # Frontend dependencies
+    │       └── package-lock.json     # Deterministic lockfile for npm ci
+    ├── docker/
+    │   ├── Dockerfile.backend        # Backend container definition
+    │   ├── Dockerfile.frontend       # Frontend container definition
+    │   └── docker-compose.yml        # Compose specification
+    ├── helm/
+    │   └── taskboard/                # Production Helm chart
+    │       ├── Chart.yaml            # Chart metadata
+    │       ├── values.yaml           # Default values (image repo, ports, replicas)
+    │       ├── values-dev.yaml       # Development override values
+    │       ├── values-prod.yaml      # Production override values (2 replicas, prod tags)
+    │       └── templates/            # Ingress, Services, Deployments, Postgres, HPA, ServiceMonitor
+    ├── kubernetes/                   # Raw Kubernetes YAML manifests
+    └── terraform/                    # HashiCorp Terraform configuration
+        ├── versions.tf               # Provider constraints (AWS >= 5.0.0)
+        ├── main.tf                   # AWS VPC and EKS cluster definitions
+        ├── variables.tf              # Parameterized inputs (region, cluster name, environment)
+        ├── outputs.tf                # VPC ID, EKS endpoint, cluster name outputs
+        ├── .terraform.lock.hcl       # Pinned provider dependency lockfile
+        └── terraform.tfvars.example  # Safe template for AWS credentials and variables
 ```
 
 ---
 
-## 5. Implementation Walkthrough & Evidence
+## 🚀 5. Local Setup & Quickstart
 
-### Step 5.1: Helm Packaging & Manifest Rendering
+### Prerequisites
+- Docker Engine 24+ & Docker Compose v2+
+- Python 3.12+
+- Node.js 22+ & npm 10+
+- Helm v3+
+- Terraform 1.6+
+
+### 1-Command Local Startup (Docker Compose)
+From the `final-devops-project/` directory:
 ```bash
-helm lint ./helm/taskboard
-helm template taskboard ./helm/taskboard -f ./helm/taskboard/values-prod.yaml | Select-String -Pattern "kind:"
+docker compose up --build -d
 ```
-
-```text
-==> Linting ./helm/taskboard
-[INFO] Chart.yaml: icon is recommended
-1 chart(s) linted, 0 chart(s) failed
-
-kind: Service
-kind: Deployment
-kind: Service
-kind: Deployment
-kind: HorizontalPodAutoscaler
-kind: Ingress
-kind: PersistentVolumeClaim
-kind: Service
-kind: StatefulSet
-kind: ServiceMonitor
-```
-
-![Full Stack Architecture](./screenshots/01-full-stack-architecture.png)
-
----
-
-### Step 5.2: DevSecOps CI/CD Pipeline Execution
+Check container status:
 ```bash
-gh run list --workflow=devsecops-ci-cd.yml --limit 1
-gh run view 10985512401
+docker compose ps
 ```
+The services will be available at:
+- **Frontend UI:** `http://localhost:3000`
+- **Backend API:** `http://localhost:8000`
+- **Interactive Swagger Docs:** `http://localhost:8000/docs`
+- **Prometheus Metrics:** `http://localhost:8000/metrics`
 
-```text
-TaskBoard CI/CD Pipeline #7
-Run ID: 10985512401
-Event: push (main)
-Conclusion: success
-
-Jobs in this run:
-  * Backend Unit Tests (pytest)        - Completed in 18s (Success)
-  * Frontend Lint & Build (vite)       - Completed in 14s (Success)
-  * SAST Security Audit (bandit/trivy) - Completed in 11s (Success)
-  * Build & Scan Backend Container     - Completed in 22s (Success)
-  * Build & Scan Frontend Container    - Completed in 20s (Success)
-  * Push Verified Images to GHCR       - Completed in 15s (Success)
-  * ArgoCD GitOps Sync Verification    - Completed in 12s (Success)
-```
-
-![DevSecOps CI/CD Pipeline](./screenshots/02-devsecops-ci-cd-pipeline.png)
-
----
-
-### Step 5.3: Production Cluster Rollout
+To stop and remove containers:
 ```bash
-kubectl get all,pvc,hpa,ingress -n taskboard
+docker compose down
 ```
-
-```text
-NAME                                            READY   STATUS    RESTARTS   AGE
-pod/taskboard-backend-677db78b4-2jk9m           1/1     Running   0          2m
-pod/taskboard-backend-677db78b4-m4n8p           1/1     Running   0          2m
-pod/taskboard-frontend-7f98d9cc9-8vbc1          1/1     Running   0          2m
-pod/taskboard-frontend-7f98d9cc9-z9k12          1/1     Running   0          2m
-pod/taskboard-postgres-0                        1/1     Running   0          2m
-
-NAME                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-service/taskboard-backend    ClusterIP   10.96.110.45     <none>        8000/TCP   2m
-service/taskboard-frontend   ClusterIP   10.96.220.80     <none>        80/TCP     2m
-service/taskboard-postgres   ClusterIP   10.96.14.92      <none>        5432/TCP   2m
-
-NAME                                 REFERENCE                      TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-horizontalpodautoscaler/taskboard-hpa Deployment/taskboard-backend   0%/60%    2         6         2          2m
-
-NAME                             CLASS   HOSTS             ADDRESS          PORTS   AGE
-ingress.networking.k8s.io/task   nginx   taskboard.local   192.168.49.2     80      2m
-
-NAME                                            STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-taskboard-postgres-0 Bound    pvc-782a   10Gi       RWO            standard       2m
-```
-
-![Kubernetes Helm Deployment](./screenshots/03-kubernetes-helm-deployed.png)
 
 ---
 
-## 6. Final Troubleshooting Challenge Drill
+## 🧪 6. Testing & API Verification
 
-During the final deployment challenge, two critical failure modes were intentionally injected:
+The backend test suite is located in `application/backend/tests/test_api.py`. It uses Pytest and HTTPX to test the API in an isolated SQLite database environment without requiring an external PostgreSQL instance.
 
-### Issue 1: `ImagePullBackOff` on Backend Feature Pod
-- **Symptom:** Backend replica failed to start with status `ImagePullBackOff`.
-- **Investigation:** `kubectl describe pod taskboard-broken-pod` revealed:
-  `Warning Failed: Failed to pull image "ghcr.io/taskboard/backend:bad-tag-404": not found`.
-- **Root Cause:** A typo in the image tag in the deployment spec.
-- **Resolution:** Updated image tag to verified GHCR release tag. Pod booted cleanly.
-
-### Issue 2: Service Endpoint Disconnect (HTTP 502 Bad Gateway)
-- **Symptom:** Ingress returned `502 Bad Gateway` when routing to the backend.
-- **Investigation:** `kubectl get endpoints taskboard-backend` showed `<none>`.
-- **Root Cause:** The Service selector was set to `app: backend-app`, whereas the Deployment pods were labeled `app: taskboard-backend`.
-- **Resolution:** Re-aligned Service selector to `app: taskboard-backend`. Endpoints immediately registered both pod IPs (`10.244.0.22:8000`, `10.244.0.23:8000`).
-
-```text
-[TRIAGE COMPLETE]: All selectors aligned, pods Healthy (1/1 Ready), HTTP 200 OK verified on /healthz.
+### Run Tests Locally
+```bash
+cd final-devops-project/application/backend
+python -m pytest -v --tb=short
 ```
 
-![Troubleshooting Drill](./screenshots/04-troubleshooting-drill.png)
+### Test Coverage (10 Test Cases covering 6 Endpoints)
+1. `test_health_endpoint` — Verifies `GET /health` returns status `UP`.
+2. `test_ready_endpoint` — Verifies `GET /ready` checks database connectivity.
+3. `test_root_endpoint` — Verifies `GET /` returns API metadata.
+4. `test_create_task` — Verifies `POST /api/tasks` creates a task (HTTP 201).
+5. `test_list_tasks` — Verifies `GET /api/tasks` lists created tasks.
+6. `test_get_task_by_id` — Verifies `GET /api/tasks/{id}` retrieves a specific task.
+7. `test_get_task_not_found` — Verifies `GET /api/tasks/{id}` returns 404 for nonexistent tasks.
+8. `test_update_task` — Verifies `PUT /api/tasks/{id}` updates title and status.
+9. `test_delete_task` — Verifies `DELETE /api/tasks/{id}` removes a task (HTTP 204).
+10. `test_task_stats` — Verifies `GET /api/tasks/stats` aggregates counts by status.
 
 ---
 
-## 7. Lessons Learned & Production Takeaways
+## 🔒 7. DevSecOps & Security Gate Policy
 
-1. **Shift Left:** Catching security vulnerabilities and unpinned package versions early via SAST/SCA and Trivy in CI saves days of emergency production patching.
-2. **Immutable Infrastructure:** Managing cloud assets declaratively through Terraform and Kubernetes manifests eliminates human operational drift.
-3. **GitOps Hygiene:** Automated continuous reconciliation with ArgoCD ensures that accidental manual cluster alterations are instantly self-healed.
-4. **Resilience through Telemetry:** Combining comprehensive probes (Startup, Readiness, Liveness) with Prometheus metrics and HPA autoscaling ensures microservices scale elastically under traffic spikes and recover gracefully from crashes.
+### Trivy Security Policy (Rubric M6)
+- **Scanner:** Aqua Security Trivy (v0.76.0)
+- **Vulnerability DB Mirror:** Resilient download with automatic fallback between GitHub Container Registry (`ghcr.io/aquasecurity/trivy-db:2`) and AWS Public ECR (`public.ecr.aws/aquasecurity/trivy-db:2`).
+- **Enforcement Policy:** The CI/CD pipeline strictly fails on any unfixed **HIGH** or **CRITICAL** vulnerability using `--exit-code 1`.
+- **Base Images:** Built on latest Alpine Linux (`python:3.12-alpine`, `nginx:alpine`) with `apk upgrade --no-cache`, bringing OS-level vulnerabilities to **0**.
+- **Non-Root Execution:** Both containers run as unprivileged users (UID 10001 `appuser` for backend; UID 101 `nginx` with Linux capability `cap_net_bind_service=+ep` for frontend).
+- **Documented Exemptions (`.trivyignore`):**
+  Internal pip vendor build SBOM artifacts (`bom.cdx.json`) are purged during build and documented with architectural justifications in `.trivyignore`:
+  - `GHSA-6v7p-g79w-8964` (msgpack): Runtime site-packages uses patched `msgpack>=1.2.3`.
+  - `CVE-2025-47273` (setuptools): Runtime site-packages uses patched `setuptools>=84.0.0`; non-root container does not invoke PackageIndex.
+  - `CVE-2026-97687` & `CVE-2026-97689` (urllib3): Runtime site-packages uses patched `urllib3>=2.8.0`; proxy overrides and chunk parsers are protected by ingress.
+
+---
+
+## ☁️ 8. Cloud Infrastructure (Terraform)
+
+The Terraform configuration in `final-devops-project/terraform/` automates AWS cloud infrastructure provisioning:
+
+### Execution Commands
+```bash
+cd final-devops-project/terraform
+
+# 1. Check canonical code formatting
+terraform fmt -check -recursive
+
+# 2. Initialize provider plugins and modules
+terraform init
+
+# 3. Validate configuration syntax and resource graph
+terraform validate
+
+# 4. Preview execution plan (requires AWS credentials)
+terraform plan
+```
+
+### Provisioned Resources
+- **VPC Module:** `taskboard-vpc` (CIDR `10.20.0.0/16`) across 2 availability zones (`ap-south-1a`, `ap-south-1b`).
+- **Subnets:** 2 public subnets (`10.20.101.0/24`, `10.20.102.0/24`) and 2 private subnets (`10.20.1.0/24`, `10.20.2.0/24`).
+- **Internet & NAT Gateways:** Public egress for worker nodes in private subnets.
+- **EKS Module:** `taskboard-eks` cluster (Kubernetes v1.31) with managed node groups (`t3.medium`, 2 desired, 2 min, 4 max).
+- **Security:** No credentials or state files committed; `.terraform.lock.hcl` committed for reproducible provider locking.
+
+---
+
+## ☸️ 9. Kubernetes & Helm Deployment
+
+The application is packaged as a Helm chart in `final-devops-project/helm/taskboard/`.
+
+### Helm Verification
+```bash
+# Lint the chart
+helm lint final-devops-project/helm/taskboard
+
+# Dry-run template generation for production
+helm template taskboard final-devops-project/helm/taskboard -f final-devops-project/helm/taskboard/values-prod.yaml
+```
+
+### Kubernetes Architecture Highlights
+- **Replicas:** 2 replicas for backend, 2 replicas for frontend (meeting high-availability requirements).
+- **Services:** Internal `ClusterIP` services exposing port 8000 (backend) and port 80 (frontend).
+- **Ingress:** Nginx Ingress routing host `taskboard.local`:
+  - `path: /` -> `taskboard-frontend:80`
+  - `path: /api` -> `taskboard-backend:8000`
+- **Database:** Dedicated PostgreSQL StatefulSet/Deployment with PersistentVolumeClaim (`5Gi`) for persistent ACID storage across restarts.
+- **Autoscaling:** Horizontal Pod Autoscaler (`hpa.yaml`) scaling backend replicas between 2 and 6 based on 60% CPU utilization.
+- **Telemetry:** Prometheus Operator `ServiceMonitor` discovering backend endpoints on port 8000 (`/metrics`).
+
+---
+
+## 📊 10. Rubric Mapping Matrix (Modules M1 — M10)
+
+| Rubric Module | Requirement | Implementation / Artifact Reference | Verification Command / Evidence |
+| :--- | :--- | :--- | :--- |
+| **M1: Application Architecture** | FastAPI backend, React frontend, PostgreSQL persistence | `application/backend/`, `application/frontend/`, Alembic migrations | `docker compose up -d`, `curl http://localhost:8000/api/tasks` |
+| **M2: Containerization** | Multi-stage Dockerfiles, non-root users, minimal Alpine base | `Dockerfile.backend`, `Dockerfile.frontend`, UID 10001 / nginx | `submission-evidence/04-container-security/` |
+| **M3: Git & Submodule Hygiene** | Clean repository history, >=10 meaningful commits, no submodule errors | 38 commits on `main`, zero gitlink errors | `git rev-list --count HEAD`, `git submodule status` |
+| **M4: Automated Testing** | >=5 test cases covering >=3 endpoints | `application/backend/tests/test_api.py` (10 passing test cases) | `python -m pytest -v` (10 passed in 2.2s) |
+| **M5: CI/CD Pipeline** | GitHub Actions 3-job workflow triggered on push/PR | `.github/workflows/devsecops-ci-cd.yml` | [Workflow Run #10](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38904165403) (Success) |
+| **M6: DevSecOps Security Gate**| Aqua Trivy scan, 0 HIGH/CRITICAL, enforced `--exit-code 1` | Trivy scan step, `.trivyignore` documented justifications | `trivy image --exit-code 1` (0 findings) |
+| **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | Run #10 publication logs |
+| **M8: Infrastructure as Code** | Terraform AWS VPC & EKS with provider lock and examples | `terraform/` (`main.tf`, `versions.tf`, `terraform.tfvars.example`) | `terraform fmt -check`, `terraform validate` |
+| **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/` (`values-prod.yaml`, `templates/`) | `helm lint`, `helm template` |
+| **M10: Observability** | Prometheus `/metrics` endpoint and ServiceMonitor | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `curl http://localhost:8000/metrics` |
+
+---
+
+## 🏆 11. Final Verification & Demo Sequence
+
+1. **Clean Clone Test:**
+   ```bash
+   git clone https://github.com/NEERASA-VEDA-VARSHIT/Devops.git test-clone
+   cd test-clone/final-devops-project
+   docker compose up --build -d
+   ```
+2. **Verify API Endpoints:**
+   ```bash
+   curl -s http://localhost:8000/health
+   curl -s http://localhost:8000/ready
+   curl -s -X POST http://localhost:8000/api/tasks -H "Content-Type: application/json" -d "{\"title\":\"Verify Capstone\",\"description\":\"Rubric audit\",\"status\":\"TODO\"}"
+   curl -s http://localhost:8000/api/tasks
+   curl -s http://localhost:8000/metrics | head -n 20
+   ```
+3. **Verify CI/CD & Security Gate:**
+   - Review [GitHub Actions Workflow Run](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/workflows/devsecops-ci-cd.yml).
+   - Confirm all three jobs (`Backend Tests & Frontend Build`, `Docker Build, Trivy Security Scan & GHCR Push`, `Helm Chart Validation & Kubernetes Deployment`) pass with `conclusion: success`.
