@@ -5,8 +5,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM nginx:1.27-alpine
-RUN apk add --no-cache libcap && \
+FROM nginx:alpine
+RUN apk update && apk upgrade --no-cache && \
+    apk add --no-cache libcap && \
     touch /var/run/nginx.pid && \
     chown -R nginx:nginx /var/run/nginx.pid /var/cache/nginx /var/log/nginx && \
     setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx

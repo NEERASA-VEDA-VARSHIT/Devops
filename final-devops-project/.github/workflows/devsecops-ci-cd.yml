@@ -44,10 +44,10 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
       - name: Scan backend
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}
       - name: Scan frontend
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }}
       - name: Push images
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}

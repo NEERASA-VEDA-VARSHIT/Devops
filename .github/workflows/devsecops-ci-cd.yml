@@ -84,11 +84,11 @@ jobs:
 
       - name: Trivy Vulnerability Scan - Backend Image
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
 
       - name: Trivy Vulnerability Scan - Frontend Image
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 0 ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
 
       - name: Push Docker Images to GHCR
         if: github.ref == 'refs/heads/main'

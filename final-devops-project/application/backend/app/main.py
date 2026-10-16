@@ -15,8 +15,9 @@ Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 @app.on_event("startup")
 def startup():
-    # Production containers run Alembic before Uvicorn; create_all keeps tests self-contained.
-    Base.metadata.create_all(bind=engine)
+    # Production relies strictly on Alembic migrations. SQLite fallback calls create_all for testing.
+    if engine.url.drivername.startswith("sqlite"):
+        Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
