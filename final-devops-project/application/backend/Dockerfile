@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 RUN apk update && apk upgrade --no-cache && \
     apk add --no-cache libpq
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
+RUN pip install --no-cache-dir --upgrade pip "setuptools>=78.1.1" && \
     pip install --no-cache-dir -r requirements.txt && \
     adduser -D -u 10001 appuser
 COPY alembic.ini ./
