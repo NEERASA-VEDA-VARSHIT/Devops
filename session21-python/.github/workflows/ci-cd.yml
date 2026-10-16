@@ -40,19 +40,15 @@ jobs:
           docker build -t ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }} ./backend
           docker build -t ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }} ./frontend
       - name: Scan backend
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
-      - name: Scan frontend
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }}
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasecurity/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed \
+            ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}
+       - name: Scan frontend
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasecurity/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed \
+            ghcr.io/${{ github.repository_owner }}/taskboard-frontend:${{ github.sha }}
       - name: Push images
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/taskboard-backend:${{ github.sha }}

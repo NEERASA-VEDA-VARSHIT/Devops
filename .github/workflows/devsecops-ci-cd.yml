@@ -79,22 +79,18 @@ jobs:
                        final-devops-project/application/frontend
 
       - name: Trivy Vulnerability Scan - Backend Image
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
-          format: 'table'
-          severity: 'CRITICAL,HIGH'
-          ignore-unfixed: true
-          exit-code: '0'
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasecurity/trivy:latest image --severity CRITICAL,HIGH --ignore-unfixed \
+            --format table --exit-code 0 \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
 
       - name: Trivy Vulnerability Scan - Frontend Image
-        uses: aquasecurity/trivy-action@v0.28.0
-        with:
-          image-ref: ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
-          format: 'table'
-          severity: 'CRITICAL,HIGH'
-          ignore-unfixed: true
-          exit-code: '0'
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasecurity/trivy:latest image --severity CRITICAL,HIGH --ignore-unfixed \
+            --format table --exit-code 0 \
+            ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
 
       - name: Push Docker Images to GHCR
         if: github.ref == 'refs/heads/main'
