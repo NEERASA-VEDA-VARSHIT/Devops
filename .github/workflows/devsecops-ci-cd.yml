@@ -137,10 +137,14 @@ jobs:
             --set ingress.enabled=true
 
       - name: Deploy to Remote Kubernetes Cluster
-        if: github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_DATA != ''
+        if: github.ref == 'refs/heads/main'
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         run: |
+          if [ -z "$KUBE_CONFIG_DATA" ]; then
+            echo "::notice ::KUBE_CONFIG_DATA secret not configured in GitHub repository secrets. Helm template validated successfully. Skipping remote cluster deployment."
+            exit 0
+          fi
           mkdir -p ~/.kube
           echo "$KUBE_CONFIG_DATA" | base64 -d > ~/.kube/config
           helm upgrade --install taskboard ./final-devops-project/helm/taskboard -n taskboard --create-namespace \
