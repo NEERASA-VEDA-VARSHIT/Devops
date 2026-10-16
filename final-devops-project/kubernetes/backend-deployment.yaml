@@ -1,29 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "taskboard.fullname" . }}-backend
+  name: taskboard-backend
+  namespace: taskboard
+  labels:
+    app: taskboard-backend
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 2
   selector:
-    matchLabels: {app: taskboard-backend}
+    matchLabels:
+      app: taskboard-backend
   template:
     metadata:
-      labels: {app: taskboard-backend}
+      labels:
+        app: taskboard-backend
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.backend.image }}:{{ .Values.backend.tag }}"
-          ports: [{containerPort: 8000}]
+          image: ghcr.io/neerasa-veda-varshit/taskboard-backend:latest
+          ports:
+            - containerPort: 8000
           env:
             - name: DATABASE_URL
-              value: "postgresql+psycopg://{{ .Values.postgres.username }}:{{ .Values.postgres.password }}@{{ .Values.postgres.host }}:5432/{{ .Values.postgres.database }}"
+              value: "postgresql+psycopg://taskboard:taskboard@taskboard-postgres:5432/taskboard"
           readinessProbe:
-            httpGet: {path: /ready, port: 8000}
+            httpGet:
+              path: /ready
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
-            httpGet: {path: /health, port: 8000}
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 20
             periodSeconds: 15
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

@@ -11,7 +11,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
+    build: ../application/backend
     environment:
       DATABASE_URL: postgresql+psycopg://taskboard:taskboard@postgres:5432/taskboard
     depends_on:
@@ -20,7 +20,7 @@ services:
       - "8000:8000"
 
   frontend:
-    build: ./frontend
+    build: ../application/frontend
     depends_on:
       - backend
     ports:

@@ -1,0 +1,14 @@
+# ==============================================================================
+# AWS Infrastructure Configuration Example
+# Copy this file to terraform.tfvars and customize for your environment.
+# DO NOT commit the resulting terraform.tfvars containing real credentials!
+# ==============================================================================
+
+# AWS Region where infrastructure will be provisioned
+aws_region = "ap-south-1"
+
+# Name of the AWS EKS Cluster
+cluster_name = "taskboard-eks"
+
+# Environment deployment tier: dev | staging | prod
+environment = "prod"

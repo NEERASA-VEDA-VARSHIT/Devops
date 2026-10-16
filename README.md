@@ -368,13 +368,13 @@ git cherry-pick <commit-hash>
 
 ### Module Compliance Matrix
 - **M1 — Full-Stack Application:** FastAPI REST backend + React 18 client + PostgreSQL 16 + Alembic migrations in [`final-devops-project/application/`](./final-devops-project/application/).
-- **M2 — Automated Testing:** Pytest test suite with 7 test cases covering health, CRUD, statistics, and error validation.
-- **M3 — Git & GitHub:** Clean Git commit history, properly structured branch workflow, `.gitignore` excluding secrets, caches, and node_modules.
-- **M4 — Docker Multi-Stage:** Multi-stage builds for backend and frontend running as non-root users with [`docker-compose.yml`](./final-devops-project/docker/docker-compose.yml).
-- **M5 — CI/CD Pipeline:** GitHub Actions workflow executing build, pytest quality gates, and pushing SHA-tagged images to GHCR.
-- **M6 — DevSecOps:** Aqua Security Trivy container CVE scans with automated pipeline break on HIGH/CRITICAL vulnerabilities.
-- **M7 — Terraform IaC:** Modular AWS infrastructure provisioning VPC (multi-AZ) and managed AWS EKS cluster with clean destroy verification.
-- **M8 — Kubernetes & Helm:** Production deployment in `taskboard` namespace using parameterized Helm charts with 2+ replicas, Ingress, and health probes.
+- **M2 — Automated Testing:** Pytest test suite with 10 comprehensive test cases covering health, readiness, root, CRUD (POST, GET, PUT, DELETE), 404 validation, and task statistics using isolated in-memory SQLite.
+- **M3 — Git & GitHub:** Clean Git commit history, properly structured branch workflow, `.gitignore` excluding secrets, .env, .venv, caches, and node_modules.
+- **M4 — Docker Multi-Stage:** Multi-stage builds for backend (appuser 10001) and frontend (nginx non-root) with [`docker-compose.yml`](./final-devops-project/docker-compose.yml).
+- **M5 — CI/CD Pipeline:** Root-level GitHub Actions workflow (`.github/workflows/devsecops-ci-cd.yml`) executing build, pytest quality gates, and pushing SHA-tagged images to GHCR.
+- **M6 — DevSecOps:** Aqua Security Trivy container CVE scans with automated pipeline security validation.
+- **M7 — Terraform IaC:** Modular AWS infrastructure provisioning VPC (multi-AZ) and managed AWS EKS cluster with `terraform.tfvars.example` and clean destroy verification.
+- **M8 — Kubernetes & Helm:** Production deployment in `taskboard` namespace using parameterized Helm charts and static manifests with 2+ replicas, Ingress (port 8000), and health probes.
 - **M9 — Observability:** Live `/metrics` scraping via Prometheus and Grafana dashboards for latency, RPS, and error rates.
 - **M10 — Final Presentation & Documentation:** Complete technical documentation in root `README.md`, slide deck (`presentation.pptx` / `slides.pdf`), and walkthrough video (`presentation_walkthrough.mp4`).
 

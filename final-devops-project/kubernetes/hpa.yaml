@@ -1,10 +1,19 @@
-{{- if .Values.hpa.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
-metadata: {name: taskboard-backend}
+metadata:
+  name: taskboard-backend
+  namespace: taskboard
 spec:
-  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: {{ include "taskboard.fullname" . }}-backend}
-  minReplicas: {{ .Values.hpa.minReplicas }}
-  maxReplicas: {{ .Values.hpa.maxReplicas }}
-  metrics: [{type: Resource, resource: {name: cpu, target: {type: Utilization, averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}}}}]
-{{- end }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: taskboard-backend
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
