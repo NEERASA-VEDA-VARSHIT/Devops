@@ -154,10 +154,11 @@ jobs:
       - name: Push Docker Images to GHCR
         if: github.ref == 'refs/heads/main'
         run: |
-          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }}
-          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:latest
-          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }}
-          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:latest
+          echo "Publishing container images to GHCR..."
+          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }} || (sleep 3 && docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:${{ github.sha }})
+          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:latest || (sleep 3 && docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-backend:latest)
+          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }} || (sleep 3 && docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:${{ github.sha }})
+          docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:latest || (sleep 3 && docker push ghcr.io/${{ env.REPO_OWNER }}/taskboard-frontend:latest)
 
   k8s-validate-and-deploy:
     name: Helm Chart Validation & Kubernetes Deployment
