@@ -121,6 +121,11 @@ Devops/
 │   ├── 15_prometheus_targets_up.png     # Prometheus target health UP (1/1)
 │   ├── 16_grafana_dashboard.png         # Grafana platform observability dashboard
 │   └── 17_terraform_destroy_complete.png# Clean AWS teardown (53 destroyed)
+├── demo/                             # Capstone demo deliverables & video walkthrough
+│   ├── presentation.pptx             # Slide deck presentation (10 slides)
+│   ├── slides.pdf                    # PDF version of presentation slides
+│   ├── presentation_walkthrough.mp4  # Full-length video presentation walkthrough (49 MB)
+│   └── README.md                     # Video agenda and timestamp index
 ├── submission-evidence/              # Text logs, reports, and audit artifacts
 │   ├── 01-application/               # Application run logs and API responses
 │   ├── 02-tests/                     # Pytest 10-test execution output
@@ -523,7 +528,7 @@ All 17 required grading milestones have been executed, validated, and archived i
 | **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | `screenshots/06_ghcr_packages_sha_tags.png` |
 | **M8: Infrastructure as Code** | Terraform AWS VPC & EKS with provider lock and examples | `terraform/` (`main.tf`, `versions.tf`, `terraform.tfvars.example`) | `screenshots/08_terraform_plan_output.png` |
 | **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/`, `troubleshooting/`, `scripts/` | `screenshots/11_kubectl_get_pods_running.png` |
-| **M10: Observability** | Prometheus `/metrics` endpoint, ServiceMonitor, Grafana | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `screenshots/16_grafana_dashboard.png` |
+| **M10: Observability & Final Demo** | Prometheus `/metrics` endpoint, ServiceMonitor, Grafana, and Walkthrough Video | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml`, `demo/` | `screenshots/16_grafana_dashboard.png`, [`demo/presentation_walkthrough.mp4`](demo/presentation_walkthrough.mp4) |
 
 ---
 
@@ -548,3 +553,7 @@ All 17 required grading milestones have been executed, validated, and archived i
    - Confirm all three jobs (`Backend Tests & Frontend Build`, `Docker Build, Trivy Security Scan & GHCR Push`, `Helm Chart Validation & Kubernetes Deployment`) pass with `conclusion: success`.
 4. **Demonstrate Kubernetes Troubleshooting & Autoscaling:**
    - Follow the detailed walkthrough in [submission-evidence/08-final-demo/demo_guide.txt](submission-evidence/08-final-demo/demo_guide.txt).
+5. **Review Video Presentation & Slide Deck:**
+   - Watch the full-length video walkthrough: [`demo/presentation_walkthrough.mp4`](demo/presentation_walkthrough.mp4).
+   - Review presentation slides: [`demo/presentation.pptx`](demo/presentation.pptx) or [`demo/slides.pdf`](demo/slides.pdf).
+   - Agenda & timestamp breakdown: [`demo/README.md`](demo/README.md).
