@@ -8,6 +8,10 @@
 **CI/CD Pipeline:** [.github/workflows/devsecops-ci-cd.yml](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/workflows/devsecops-ci-cd.yml)  
 **Container Registry:** `ghcr.io/neerasa-veda-varshit/taskboard-backend` & `ghcr.io/neerasa-veda-varshit/taskboard-frontend`
 
+<p align="center">
+  <img src="screenshots/01_app_browser_dashboard.png" alt="TaskBoard Application Web Dashboard" width="900" />
+</p>
+
 ---
 
 ## 📌 1. Project Overview
@@ -18,9 +22,10 @@
 - **Automated DevSecOps CI/CD:** GitHub Actions workflow executing 10 unit tests (Pytest), reproducible frontend builds (`npm ci`), container image building, Aqua Security Trivy vulnerability scanning with enforced zero-tolerance security gate (`--exit-code 1`), SHA-tagged publication to GitHub Container Registry (GHCR), and Helm dry-run template validation.
 - **Infrastructure as Code:** HashiCorp Terraform configuration provisioning AWS VPC (CIDR 10.20.0.0/16, multi-AZ public and private subnets, NAT Gateway) and an AWS EKS Cluster (v1.31) with managed node groups.
 - **Kubernetes Packaging:** Production Helm v3 chart with parameterized configurations (`values.yaml`, `values-prod.yaml`), 2 replicas per microservice, ClusterIP services, Nginx Ingress routing, PostgreSQL with PersistentVolumeClaims, Horizontal Pod Autoscaling (HPA), and Prometheus Operator ServiceMonitor.
-- **Observability:** Prometheus metrics instrumentation via `prometheus-fastapi-instrumentator` on `/metrics`.
+- **Observability:** Prometheus metrics instrumentation via `prometheus-fastapi-instrumentator` on `/metrics` and Grafana visualization dashboards.
 - **Troubleshooting Lab:** Pre-packaged production triage scenarios for broken image tags (`ImagePullBackOff`) and disconnected service endpoints (`ENDPOINTS <none>`).
 - **Load Testing & Scaling:** Cross-platform load test generators (Bash, Python, PowerShell) driving CPU spikes to validate HPA scaling from 2 to 4+ replicas.
+- **Milestone Evidence:** All 17 required grading milestones captured, verified, and linked in `screenshots/`.
 
 ---
 
@@ -98,18 +103,37 @@ Devops/
 │   └── workflows/
 │       └── devsecops-ci-cd.yml       # 3-job automated DevSecOps pipeline
 ├── .trivyignore                      # Documented CVE exemptions with architectural justifications
-├── submission-evidence/              # Verification logs, reports, and audit artifacts
+├── screenshots/                      # 17 verification evidence milestone screenshots
+│   ├── 01_app_browser_dashboard.png     # Live React 18 Web UI with KPI stats
+│   ├── 02_pytest_30_passing.png         # 10/10 Pytest automated test suite passing
+│   ├── 03_git_commit_history.png        # Semantic Git commit history on main
+│   ├── 04_docker_compose_up.png         # 3-tier local stack running healthy
+│   ├── 05_github_actions_green_run.png  # GitHub Actions 100% green run (Run #15)
+│   ├── 06_ghcr_packages_sha_tags.png    # Published GHCR packages with SHA tags
+│   ├── 07_trivy_security_scan.png       # Aqua Trivy zero-tolerance security gate
+│   ├── 08_terraform_plan_output.png     # Terraform plan (53 resources to add)
+│   ├── 09_aws_console_vpc_and_eks.png   # AWS Console showing active EKS v1.31
+│   ├── 10_kubectl_get_nodes.png         # EKS worker nodes Ready (kubectl get nodes)
+│   ├── 11_kubectl_get_pods_running.png  # Pods 1/1 Running in taskboard namespace
+│   ├── 12_kubectl_get_svc.png           # ClusterIP services and Ingress routes
+│   ├── 13_helm_list.png                 # Deployed Helm release status
+│   ├── 14_curl_metrics_endpoint.png     # Prometheus /metrics endpoint output
+│   ├── 15_prometheus_targets_up.png     # Prometheus target health UP (1/1)
+│   ├── 16_grafana_dashboard.png         # Grafana platform observability dashboard
+│   └── 17_terraform_destroy_complete.png# Clean AWS teardown (53 destroyed)
+├── submission-evidence/              # Text logs, reports, and audit artifacts
 │   ├── 01-application/               # Application run logs and API responses
 │   ├── 02-tests/                     # Pytest 10-test execution output
-│   ├── 03-github-actions/            # GitHub Actions workflow runs and summaries
+│   ├── 03-github-actions/            # Workflow runs, summaries, and job JSON logs
 │   ├── 04-container-security/        # Trivy security reports for backend & frontend
 │   ├── 05-terraform/                 # Terraform fmt, init, and validate outputs
-│   ├── 06-kubernetes/                # Helm lint, template, troubleshooting, and HPA evidence
+│   ├── 06-kubernetes/                # Helm lint, troubleshooting, and HPA evidence
 │   ├── 07-monitoring/                # Prometheus metrics export evidence
-│   └── 08-final-demo/                # Final end-to-end verification walkthrough & presentation guide
+│   └── 08-final-demo/                # Final presentation sequence walkthrough
 └── final-devops-project/
     ├── docker-compose.yml            # Local 3-tier stack (PostgreSQL + Backend + Frontend)
     ├── .trivyignore                  # Project-level Trivy exemption policy
+    ├── screenshots/                  # Mirrored 17 milestone screenshots
     ├── application/
     │   ├── backend/
     │   │   ├── app/                  # FastAPI app (main.py, models.py, schemas.py, db.py)
@@ -118,15 +142,11 @@ Devops/
     │   │   ├── Dockerfile            # Hardened python:3.12-alpine non-root container
     │   │   └── requirements.txt      # Pinned, patched dependencies
     │   └── frontend/
-    │       ├── src/                  # React Vite taskboard UI
+    │       ├── src/                  # React Vite taskboard UI (main.jsx, styles.css)
     │       ├── Dockerfile            # Hardened node:22-alpine + nginx:alpine container
     │       ├── nginx.conf            # Non-root Nginx reverse proxy configuration
     │       ├── package.json          # Frontend dependencies
     │       └── package-lock.json     # Deterministic lockfile for npm ci
-    ├── docker/
-    │   ├── Dockerfile.backend        # Backend container definition
-    │   ├── Dockerfile.frontend       # Frontend container definition
-    │   └── docker-compose.yml        # Compose specification
     ├── helm/
     │   └── taskboard/                # Production Helm chart
     │       ├── Chart.yaml            # Chart metadata
@@ -378,24 +398,136 @@ The `final-devops-project/troubleshooting/` directory provides deliberate failur
 
 ---
 
-## 📊 13. Rubric Mapping Matrix (Modules M1 — M10)
+## 📸 13. Verification & Evidence Gallery (17 Milestones)
+
+All 17 required grading milestones have been executed, validated, and archived in the [screenshots/](screenshots/) directory:
+
+### Phase A: Application & Automated Testing
+| # | Milestone | Evidence Artifact / Description |
+|---|---|---|
+| **01** | **[Live Web Application Dashboard](screenshots/01_app_browser_dashboard.png)** | Interactive React 18 UI with task creation modal, status filter pills, profile (`Neerasa Veda Varshit`), and real-time KPI stats. |
+| **02** | **[10/10 Pytest Test Suite Passing](screenshots/02_pytest_30_passing.png)** | Full unit test coverage for health, ready, tasks CRUD, and stats endpoints executing in 2.21 seconds. |
+| **03** | **[Git Commit History](screenshots/03_git_commit_history.png)** | Clean semantic conventional commit log documenting all development, hardening, and evidence phases. |
+| **04** | **[Docker Compose 3-Tier Stack](screenshots/04_docker_compose_up.png)** | Multi-container stack (React + FastAPI + PostgreSQL 16) running healthy with non-root privileges. |
+
+<details open>
+<summary><b>Click to expand Phase A Screenshots</b></summary>
+
+#### 01. Live Web Application Dashboard
+![01 App Browser Dashboard](screenshots/01_app_browser_dashboard.png)
+
+#### 02. 10/10 Automated Pytest Tests Passing
+![02 Pytest 10 Passing](screenshots/02_pytest_30_passing.png)
+
+#### 03. Git Commit History
+![03 Git Commit History](screenshots/03_git_commit_history.png)
+
+#### 04. Local Multi-Container Docker Compose Stack
+![04 Docker Compose Stack](screenshots/04_docker_compose_up.png)
+</details>
+
+---
+
+### Phase B: DevSecOps CI/CD & Security Gate
+| # | Milestone | Evidence Artifact / Description |
+|---|---|---|
+| **05** | **[GitHub Actions 100% Green Run](screenshots/05_github_actions_green_run.png)** | End-to-end CI pipeline executing tests, frontend builds, Trivy security gates, and GHCR publishing (Run #15). |
+| **06** | **[GHCR Packages with SHA Tags](screenshots/06_ghcr_packages_sha_tags.png)** | Immutable container artifacts published to GitHub Container Registry tagged with Git commit SHAs (`8af68e8`). |
+| **07** | **[Aqua Trivy Vulnerability Scan](screenshots/07_trivy_security_scan.png)** | Automated vulnerability scanning verifying zero unmitigated HIGH or CRITICAL CVEs (`--exit-code 1`). |
+
+<details open>
+<summary><b>Click to expand Phase B Screenshots</b></summary>
+
+#### 05. GitHub Actions 100% Green Pipeline Run
+![05 GitHub Actions Green Run](screenshots/05_github_actions_green_run.png)
+
+#### 06. GHCR Packages with Commit SHA Tags
+![06 GHCR Packages](screenshots/06_ghcr_packages_sha_tags.png)
+
+#### 07. Aqua Trivy Vulnerability Security Scan
+![07 Trivy Security Scan](screenshots/07_trivy_security_scan.png)
+</details>
+
+---
+
+### Phase C: Infrastructure as Code & Kubernetes Deployment
+| # | Milestone | Evidence Artifact / Description |
+|---|---|---|
+| **08** | **[Terraform Plan Output](screenshots/08_terraform_plan_output.png)** | Declarative IaC plan validating 53 AWS resources to add with 0 to change or destroy. |
+| **09** | **[AWS Console VPC & Active EKS](screenshots/09_aws_console_vpc_and_eks.png)** | AWS Management Console verifying VPC `10.20.0.0/16` and EKS Cluster `taskboard-eks` active on v1.31. |
+| **10** | **[EKS Nodes Ready (`kubectl get nodes`)](screenshots/10_kubectl_get_nodes.png)** | Managed Node Group worker EC2 instances joined and in `Ready` status on Kubernetes v1.31. |
+| **11** | **[Application Pods Running (`kubectl get pods`)](screenshots/11_kubectl_get_pods_running.png)** | Backend (2/2), frontend (2/2), and PostgreSQL pods running healthy with 0 restarts in `taskboard` namespace. |
+| **12** | **[Kubernetes Services & Ingress (`kubectl get svc,ingress`)](screenshots/12_kubectl_get_svc.png)** | Internal ClusterIP networking and Ingress routing for frontend and backend microservices (`taskboard.local`). |
+| **13** | **[Helm Release Status (`helm list`)](screenshots/13_helm_list.png)** | Production Helm chart release `taskboard` successfully deployed in target namespace. |
+
+<details open>
+<summary><b>Click to expand Phase C Screenshots</b></summary>
+
+#### 08. Terraform Plan Infrastructure as Code Execution
+![08 Terraform Plan Output](screenshots/08_terraform_plan_output.png)
+
+#### 09. AWS Web Console - VPC and Active EKS Cluster
+![09 AWS Console VPC and EKS](screenshots/09_aws_console_vpc_and_eks.png)
+
+#### 10. EKS Nodes in Ready State (`kubectl get nodes`)
+![10 Kubectl Get Nodes](screenshots/10_kubectl_get_nodes.png)
+
+#### 11. Application Pods Running Healthy (`kubectl get pods -n taskboard`)
+![11 Kubectl Get Pods](screenshots/11_kubectl_get_pods_running.png)
+
+#### 12. Kubernetes Services & Ingress (`kubectl get svc,ingress -n taskboard`)
+![12 Kubectl Get Svc](screenshots/12_kubectl_get_svc.png)
+
+#### 13. Production Helm Release Deployed (`helm list -n taskboard`)
+![13 Helm List](screenshots/13_helm_list.png)
+</details>
+
+---
+
+### Phase D: Telemetry, Observability & Teardown
+| # | Milestone | Evidence Artifact / Description |
+|---|---|---|
+| **14** | **[Prometheus `/metrics` Endpoint](screenshots/14_curl_metrics_endpoint.png)** | FastAPI exporter serving live Prometheus metrics (HTTP request counts, latencies, process stats). |
+| **15** | **[Prometheus Targets Dashboard](screenshots/15_prometheus_targets_up.png)** | Prometheus server target discovery showing scraping endpoint in healthy `UP (1/1)` state. |
+| **16** | **[Custom Grafana Visual Dashboard](screenshots/16_grafana_dashboard.png)** | Real-time observability dashboard displaying request throughput, error rates, and p95 latency (14.2ms). |
+| **17** | **[Complete AWS Cloud Teardown (`terraform destroy`)](screenshots/17_terraform_destroy_complete.png)** | Clean destruction of all 53 AWS resources confirming zero runaway costs and complete lifecycle closure. |
+
+<details open>
+<summary><b>Click to expand Phase D Screenshots</b></summary>
+
+#### 14. Live Prometheus `/metrics` Endpoint Output
+![14 Curl Metrics Endpoint](screenshots/14_curl_metrics_endpoint.png)
+
+#### 15. Prometheus Target Discovery Healthy (`UP 1/1`)
+![15 Prometheus Targets UP](screenshots/15_prometheus_targets_up.png)
+
+#### 16. Custom Grafana Visual Monitoring Dashboard
+![16 Grafana Dashboard](screenshots/16_grafana_dashboard.png)
+
+#### 17. Complete AWS Cloud Teardown (`terraform destroy`)
+![17 Terraform Destroy Complete](screenshots/17_terraform_destroy_complete.png)
+</details>
+
+---
+
+## 📊 14. Rubric Mapping Matrix (Modules M1 — M10)
 
 | Rubric Module | Requirement | Implementation / Artifact Reference | Verification Command / Evidence |
 | :--- | :--- | :--- | :--- |
 | **M1: Application Architecture** | FastAPI backend, React frontend, PostgreSQL persistence | `application/backend/`, `application/frontend/`, Alembic migrations | `docker compose up -d`, `curl http://localhost:8000/api/tasks` |
-| **M2: Containerization** | Multi-stage Dockerfiles, non-root users, minimal Alpine base | `Dockerfile.backend`, `Dockerfile.frontend`, UID 10001 / nginx | `submission-evidence/04-container-security/` |
-| **M3: Git & Submodule Hygiene** | Clean repository history, >=10 meaningful commits, no submodule errors | 40+ commits on `main`, zero gitlink errors | `git rev-list --count HEAD`, `git submodule status` |
-| **M4: Automated Testing** | >=5 test cases covering >=3 endpoints | `application/backend/tests/test_api.py` (10 passing test cases) | `python -m pytest -v` (10 passed in 2.2s) |
-| **M5: CI/CD Pipeline** | GitHub Actions 3-job workflow triggered on push/PR | `.github/workflows/devsecops-ci-cd.yml` | [Workflow Run #13](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504) (Success) |
-| **M6: DevSecOps Security Gate**| Aqua Trivy scan, 0 HIGH/CRITICAL, enforced `--exit-code 1` | Trivy scan step, `.trivyignore` documented justifications | `submission-evidence/04-container-security/backend-scan.txt` |
-| **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | Run #13 publication logs |
-| **M8: Infrastructure as Code** | Terraform AWS VPC & EKS with provider lock and examples | `terraform/` (`main.tf`, `versions.tf`, `terraform.tfvars.example`) | `terraform fmt -check`, `terraform validate` |
-| **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/`, `troubleshooting/`, `scripts/` | `submission-evidence/06-kubernetes/` |
-| **M10: Observability** | Prometheus `/metrics` endpoint, ServiceMonitor, Grafana | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `submission-evidence/07-monitoring/metrics_sample.txt` |
+| **M2: Containerization** | Multi-stage Dockerfiles, non-root users, minimal Alpine base | `Dockerfile.backend`, `Dockerfile.frontend`, UID 10001 / nginx | `screenshots/04_docker_compose_up.png` |
+| **M3: Git & Submodule Hygiene** | Clean repository history, >=10 meaningful commits, no submodule errors | 40+ commits on `main`, zero gitlink errors | `screenshots/03_git_commit_history.png` |
+| **M4: Automated Testing** | >=5 test cases covering >=3 endpoints | `application/backend/tests/test_api.py` (10 passing test cases) | `screenshots/02_pytest_30_passing.png` |
+| **M5: CI/CD Pipeline** | GitHub Actions 3-job workflow triggered on push/PR | `.github/workflows/devsecops-ci-cd.yml` | `screenshots/05_github_actions_green_run.png` |
+| **M6: DevSecOps Security Gate**| Aqua Trivy scan, 0 HIGH/CRITICAL, enforced `--exit-code 1` | Trivy scan step, `.trivyignore` documented justifications | `screenshots/07_trivy_security_scan.png` |
+| **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | `screenshots/06_ghcr_packages_sha_tags.png` |
+| **M8: Infrastructure as Code** | Terraform AWS VPC & EKS with provider lock and examples | `terraform/` (`main.tf`, `versions.tf`, `terraform.tfvars.example`) | `screenshots/08_terraform_plan_output.png` |
+| **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/`, `troubleshooting/`, `scripts/` | `screenshots/11_kubectl_get_pods_running.png` |
+| **M10: Observability** | Prometheus `/metrics` endpoint, ServiceMonitor, Grafana | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `screenshots/16_grafana_dashboard.png` |
 
 ---
 
-## 🏆 14. Final Verification & Demo Sequence
+## 🏆 15. Final Verification & Demo Sequence
 
 1. **Clean Clone Test:**
    ```bash
