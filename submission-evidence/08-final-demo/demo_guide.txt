@@ -11,7 +11,7 @@ DEMO WALKTHROUGH STEPS:
 1. SOURCE CODE & REPOSITORY HYGIENE
    - Open repository in VS Code.
    - Show clean Git status with 0 unresolved submodules and 40+ meaningful commits.
-   - Show Dockerfiles for Backend and Frontend with multi-stage builds and non-root users.
+   - Show Dockerfiles for Backend and Frontend with multi-stage builds and non-root users (UID 10001, UID 101).
 
 2. LOCAL RUN & POSTGRESQL PERSISTENCE (DOCKER COMPOSE)
    - Execute: docker compose up --build -d
@@ -49,8 +49,37 @@ DEMO WALKTHROUGH STEPS:
    - Open final-devops-project/helm/taskboard/
    - Show templates: Deployments (2 replicas), Services (ClusterIP), Ingress (taskboard.local), PostgreSQL PVC, HPA (60% CPU), ServiceMonitor.
    - Run: helm lint final-devops-project/helm/taskboard (0 chart failures).
+   - Show values-dev.yaml and values-prod.yaml environment separation.
 
-7. TELEMETRY & OBSERVABILITY (PROMETHEUS)
+7. CLUSTER PREREQUISITES & INGRESS ROUTING
+   - Explain controller prerequisite: Ingress and HPA require controllers active in the cluster.
+   - Show scripts: scripts/install-cluster-prerequisites.sh (or .ps1) installing:
+     * NGINX Ingress Controller (ingress-nginx)
+     * Kubernetes Metrics Server
+     * Prometheus Operator & Grafana stack (kube-prometheus-stack)
+   - Route demonstration:
+     * http://taskboard.local/     -> React frontend Service
+     * http://taskboard.local/api/ -> FastAPI backend Service
+
+8. TELEMETRY & OBSERVABILITY (PROMETHEUS & GRAFANA)
    - Show /metrics endpoint on backend service instrumented with prometheus-fastapi-instrumentator.
    - Show request duration histograms, latency percentiles, and HTTP status code counters.
+   - Show ServiceMonitor resource scraping /metrics on port 8000.
+
+9. LOAD TESTING & HORIZONTAL POD AUTOSCALER (HPA)
+   - Open terminal 1: kubectl get hpa -n taskboard -w
+   - Open terminal 2: run load generator:
+     python scripts/load-test.py --url http://taskboard.local/api/tasks --requests 1500 --concurrency 15
+   - Demonstrate CPU spike above 60% target utilization and replica scaling from 2 -> 4 pods.
+
+10. KUBERNETES TROUBLESHOOTING EXERCISES (LAB 1 & LAB 2)
+   - Lab 1 (Broken Image):
+     * Apply: kubectl apply -f troubleshooting/broken-image.yaml
+     * Observe ImagePullBackOff; inspect via kubectl describe pod.
+     * Fix live via: kubectl set image deployment/taskboard-broken-image backend=ghcr.io/neerasa-veda-varshit/taskboard-backend:latest -n taskboard
+   - Lab 2 (Broken Service / Disconnected Endpoints):
+     * Apply: kubectl apply -f troubleshooting/broken-service.yaml
+     * Observe ENDPOINTS <none> via kubectl get endpoints broken-service -n taskboard.
+     * Triage label mismatch between Service selector and Pod labels.
+     * Fix live via: kubectl patch svc broken-service -n taskboard -p '{"spec":{"selector":{"app":"taskboard-backend"},"ports":[{"port":8000,"targetPort":8000}]}}'
 ================================================================================

@@ -14,11 +14,13 @@
 
 **TaskBoard** is a cloud-native task management application built to demonstrate an end-to-end, rubric-aligned DevOps lifecycle:
 - **Application Development:** Python 3.12 FastAPI REST backend with Alembic database schema migrations and React 18 / Vite frontend.
-- **Containerization & Hardening:** Multi-stage Docker builds based on minimal Alpine Linux images running as unprivileged non-root users.
+- **Containerization & Hardening:** Multi-stage Docker builds based on minimal Alpine Linux images running as unprivileged non-root users (`appuser` UID 10001; `nginx` UID 101 with `cap_net_bind_service=+ep`).
 - **Automated DevSecOps CI/CD:** GitHub Actions workflow executing 10 unit tests (Pytest), reproducible frontend builds (`npm ci`), container image building, Aqua Security Trivy vulnerability scanning with enforced zero-tolerance security gate (`--exit-code 1`), SHA-tagged publication to GitHub Container Registry (GHCR), and Helm dry-run template validation.
 - **Infrastructure as Code:** HashiCorp Terraform configuration provisioning AWS VPC (CIDR 10.20.0.0/16, multi-AZ public and private subnets, NAT Gateway) and an AWS EKS Cluster (v1.31) with managed node groups.
 - **Kubernetes Packaging:** Production Helm v3 chart with parameterized configurations (`values.yaml`, `values-prod.yaml`), 2 replicas per microservice, ClusterIP services, Nginx Ingress routing, PostgreSQL with PersistentVolumeClaims, Horizontal Pod Autoscaling (HPA), and Prometheus Operator ServiceMonitor.
 - **Observability:** Prometheus metrics instrumentation via `prometheus-fastapi-instrumentator` on `/metrics`.
+- **Troubleshooting Lab:** Pre-packaged production triage scenarios for broken image tags (`ImagePullBackOff`) and disconnected service endpoints (`ENDPOINTS <none>`).
+- **Load Testing & Scaling:** Cross-platform load test generators (Bash, Python, PowerShell) driving CPU spikes to validate HPA scaling from 2 to 4+ replicas.
 
 ---
 
@@ -48,7 +50,7 @@ flowchart TD
         FrontSvc["Frontend Service (ClusterIP:80)\n2 Replicas (nginx:alpine non-root)"]
         BackSvc["Backend Service (ClusterIP:8000)\n2 Replicas (python:3.12-alpine non-root)"]
         PGSvc["PostgreSQL Service (ClusterIP:5432)\nStateful Storage (PVC 5Gi)"]
-        HPA["Horizontal Pod Autoscaler (HPA)\n(Min: 2, Max: 6, Target CPU: 60%)"]
+        HPA["Horizontal Pod Autoscaler (HPA)\n(Min: 2, Max: 5, Target CPU: 60%)"]
         
         Ingress -->|"Path: /"| FrontSvc
         Ingress -->|"Path: /api"| BackSvc
@@ -84,6 +86,7 @@ flowchart TD
 | **Infrastructure** | HashiCorp Terraform | >= 1.6.0 (AWS v5.100) | Declarative AWS VPC and EKS cluster provisioning |
 | **Package Manager** | Helm | v3 | Multi-environment templating (`values.yaml`, `values-prod.yaml`) |
 | **Observability** | Prometheus / Grafana| Instrumentator 8.1.0 | Real-time `/metrics` exposition and ServiceMonitor integration |
+| **Autoscaling** | Kubernetes HPA | v2 | CPU utilization based horizontal pod autoscaling (60% target) |
 
 ---
 
@@ -101,9 +104,9 @@ Devops/
 │   ├── 03-github-actions/            # GitHub Actions workflow runs and summaries
 │   ├── 04-container-security/        # Trivy security reports for backend & frontend
 │   ├── 05-terraform/                 # Terraform fmt, init, and validate outputs
-│   ├── 06-kubernetes/                # Helm lint and template rendering outputs
+│   ├── 06-kubernetes/                # Helm lint, template, troubleshooting, and HPA evidence
 │   ├── 07-monitoring/                # Prometheus metrics export evidence
-│   └── 08-final-demo/                # Final end-to-end verification walkthrough
+│   └── 08-final-demo/                # Final end-to-end verification walkthrough & presentation guide
 └── final-devops-project/
     ├── docker-compose.yml            # Local 3-tier stack (PostgreSQL + Backend + Frontend)
     ├── .trivyignore                  # Project-level Trivy exemption policy
@@ -132,13 +135,25 @@ Devops/
     │       ├── values-prod.yaml      # Production override values (2 replicas, prod tags)
     │       └── templates/            # Ingress, Services, Deployments, Postgres, HPA, ServiceMonitor
     ├── kubernetes/                   # Raw Kubernetes YAML manifests
-    └── terraform/                    # HashiCorp Terraform configuration
-        ├── versions.tf               # Provider constraints (AWS >= 5.0.0)
-        ├── main.tf                   # AWS VPC and EKS cluster definitions
-        ├── variables.tf              # Parameterized inputs (region, cluster name, environment)
-        ├── outputs.tf                # VPC ID, EKS endpoint, cluster name outputs
-        ├── .terraform.lock.hcl       # Pinned provider dependency lockfile
-        └── terraform.tfvars.example  # Safe template for AWS credentials and variables
+    ├── monitoring/                   # Prometheus & Grafana stack configuration
+    │   └── prometheus-values.yaml    # ServiceMonitor selector values for kube-prometheus-stack
+    ├── scripts/                      # Operational helpers & load test scripts
+    │   ├── install-cluster-prerequisites.sh   # Installs Ingress-Nginx, Metrics Server, Prometheus
+    │   ├── install-cluster-prerequisites.ps1  # Windows PowerShell prerequisites installer
+    │   ├── load-test.sh                       # Bash curl concurrency load generator
+    │   ├── load-test.py                       # Cross-platform Python load generator
+    │   └── load-test.ps1                      # Windows PowerShell load generator
+    ├── terraform/                    # HashiCorp Terraform configuration
+    │   ├── versions.tf               # Provider constraints (AWS >= 5.0.0)
+    │   ├── main.tf                   # AWS VPC and EKS cluster definitions
+    │   ├── variables.tf              # Parameterized inputs (region, cluster name, environment)
+    │   ├── outputs.tf                # VPC ID, EKS endpoint, cluster name outputs
+    │   ├── .terraform.lock.hcl       # Pinned provider dependency lockfile
+    │   └── terraform.tfvars.example  # Safe template for AWS credentials and variables
+    └── troubleshooting/              # Production diagnostic scenarios
+        ├── broken-image.yaml         # Deliberate ImagePullBackOff manifest
+        ├── broken-service.yaml       # Deliberate disconnected Service endpoints manifest
+        └── README.md                 # Triage guides, root-cause analysis, and remediation steps
 ```
 
 ---
@@ -264,29 +279,123 @@ helm template taskboard final-devops-project/helm/taskboard -f final-devops-proj
   - `path: /` -> `taskboard-frontend:80`
   - `path: /api` -> `taskboard-backend:8000`
 - **Database:** Dedicated PostgreSQL StatefulSet/Deployment with PersistentVolumeClaim (`5Gi`) for persistent ACID storage across restarts.
-- **Autoscaling:** Horizontal Pod Autoscaler (`hpa.yaml`) scaling backend replicas between 2 and 6 based on 60% CPU utilization.
+- **Autoscaling:** Horizontal Pod Autoscaler (`hpa.yaml`) scaling backend replicas between 2 and 5 based on 60% CPU utilization.
 - **Telemetry:** Prometheus Operator `ServiceMonitor` discovering backend endpoints on port 8000 (`/metrics`).
 
 ---
 
-## 📊 10. Rubric Mapping Matrix (Modules M1 — M10)
+## 🌐 10. Cluster Prerequisites & Ingress Routing
+
+An Ingress resource and an HPA manifest are declarative configurations; they require active controllers inside the target Kubernetes cluster to implement routing and metrics collection.
+
+### 1-Step Prerequisite Installation
+Run the automated prerequisites installer:
+```bash
+# Linux / macOS (EKS cluster or Minikube)
+./scripts/install-cluster-prerequisites.sh eks       # For AWS EKS
+./scripts/install-cluster-prerequisites.sh minikube  # For Minikube
+
+# Windows PowerShell
+.\scripts\install-cluster-prerequisites.ps1 -TargetEnv "eks"
+```
+
+The script installs:
+1. **NGINX Ingress Controller:** Implements HTTP/S ingress traffic management.
+2. **Kubernetes Metrics Server:** Enables the Kubernetes metrics API (`metrics.k8s.io`) used by HPA.
+3. **Prometheus Operator & Grafana Stack (`kube-prometheus-stack`):** Enables CRD support for `ServiceMonitor` and deploys telemetry dashboards.
+
+### Ingress Hostname Resolution & Environments
+The Helm chart supports two standard host configurations:
+- **Classroom / Local Demo (`values-dev.yaml`):** Uses `taskboard.local`. Map this domain to your Ingress controller's IP in your local hosts file:
+  - Linux/macOS: `/etc/hosts` -> `<INGRESS_IP> taskboard.local`
+  - Windows: `C:\Windows\System32\drivers\etc\hosts` -> `<INGRESS_IP> taskboard.local`
+- **Production (`values-prod.yaml`):** Uses `taskboard.example.com` or custom domain backed by AWS Route53 and AWS Application Load Balancer (ALB).
+
+---
+
+## 📈 11. Horizontal Pod Autoscaler (HPA) & Load Testing
+
+The backend Deployment is governed by an HPA targeting **60% average CPU utilization** (`minReplicas: 2`, `maxReplicas: 5`).
+
+### Running the Load Test
+Use any of the cross-platform load generators to simulate concurrent traffic:
+```bash
+# Cross-Platform Python generator:
+python scripts/load-test.py --url http://taskboard.local/api/tasks --requests 1500 --concurrency 15
+
+# Bash generator:
+URL="http://taskboard.local/api/tasks" REQUESTS=1500 CONCURRENCY=15 ./scripts/load-test.sh
+
+# PowerShell generator:
+.\scripts\load-test.ps1 -Url "http://taskboard.local/api/tasks" -Requests 1500 -Concurrency 15
+```
+
+### Observing Autoscaling Live
+In a separate terminal, stream HPA events:
+```bash
+kubectl get hpa -n taskboard -w
+```
+Expected progression:
+1. Initial baseline: `cpu: 4%/60%`, 2 replicas.
+2. Load phase: `cpu: 78%/60%`, HPA triggers scale-up to 3, then 4 replicas.
+3. Cooldown phase: Load ceases, CPU drops below target, replicas safely scale down to 2.
+
+---
+
+## 🔧 12. Kubernetes Troubleshooting Lab
+
+The `final-devops-project/troubleshooting/` directory provides deliberate failure scenarios for live triage practice per Session 21 rubric requirements.
+
+### Exercise 1: ImagePullBackOff (`broken-image.yaml`)
+1. **Apply:** `kubectl apply -f troubleshooting/broken-image.yaml`
+2. **Diagnose:**
+   ```bash
+   kubectl get pods -n taskboard -l app=broken-image
+   kubectl describe pod -n taskboard -l app=broken-image
+   kubectl get events -n taskboard --sort-by=.lastTimestamp
+   ```
+   *Finding:* Kubelet event records `Failed to pull image "ghcr.io/example/taskboard-backend:does-not-exist"`, resulting in `ImagePullBackOff`.
+3. **Remediation:** Update deployment to verified release image:
+   ```bash
+   kubectl set image deployment/taskboard-broken-image backend=ghcr.io/neerasa-veda-varshit/taskboard-backend:latest -n taskboard
+   ```
+4. **Cleanup:** `kubectl delete -f troubleshooting/broken-image.yaml`
+
+### Exercise 2: Broken Service / Disconnected Endpoints (`broken-service.yaml`)
+1. **Apply:** `kubectl apply -f troubleshooting/broken-service.yaml`
+2. **Diagnose:**
+   ```bash
+   kubectl get svc broken-service -n taskboard
+   kubectl get endpoints broken-service -n taskboard
+   ```
+   *Finding:* `ENDPOINTS` displays `<none>`. Comparing `kubectl get svc broken-service -o jsonpath='{.spec.selector}'` with `kubectl get pods -n taskboard --show-labels` reveals the selector `app: label-that-does-not-exist` matches 0 pods.
+3. **Remediation:** Patch service selector to match actual backend pods:
+   ```bash
+   kubectl patch svc broken-service -n taskboard -p '{"spec":{"selector":{"app":"taskboard-backend"},"ports":[{"port":8000,"targetPort":8000}]}}'
+   ```
+   *Verification:* `kubectl get endpoints broken-service -n taskboard` now lists active pod IP addresses.
+4. **Cleanup:** `kubectl delete -f troubleshooting/broken-service.yaml`
+
+---
+
+## 📊 13. Rubric Mapping Matrix (Modules M1 — M10)
 
 | Rubric Module | Requirement | Implementation / Artifact Reference | Verification Command / Evidence |
 | :--- | :--- | :--- | :--- |
 | **M1: Application Architecture** | FastAPI backend, React frontend, PostgreSQL persistence | `application/backend/`, `application/frontend/`, Alembic migrations | `docker compose up -d`, `curl http://localhost:8000/api/tasks` |
 | **M2: Containerization** | Multi-stage Dockerfiles, non-root users, minimal Alpine base | `Dockerfile.backend`, `Dockerfile.frontend`, UID 10001 / nginx | `submission-evidence/04-container-security/` |
-| **M3: Git & Submodule Hygiene** | Clean repository history, >=10 meaningful commits, no submodule errors | 38 commits on `main`, zero gitlink errors | `git rev-list --count HEAD`, `git submodule status` |
+| **M3: Git & Submodule Hygiene** | Clean repository history, >=10 meaningful commits, no submodule errors | 40+ commits on `main`, zero gitlink errors | `git rev-list --count HEAD`, `git submodule status` |
 | **M4: Automated Testing** | >=5 test cases covering >=3 endpoints | `application/backend/tests/test_api.py` (10 passing test cases) | `python -m pytest -v` (10 passed in 2.2s) |
-| **M5: CI/CD Pipeline** | GitHub Actions 3-job workflow triggered on push/PR | `.github/workflows/devsecops-ci-cd.yml` | [Workflow Run #10](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38904165403) (Success) |
-| **M6: DevSecOps Security Gate**| Aqua Trivy scan, 0 HIGH/CRITICAL, enforced `--exit-code 1` | Trivy scan step, `.trivyignore` documented justifications | `trivy image --exit-code 1` (0 findings) |
-| **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | Run #10 publication logs |
+| **M5: CI/CD Pipeline** | GitHub Actions 3-job workflow triggered on push/PR | `.github/workflows/devsecops-ci-cd.yml` | [Workflow Run #13](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/runs/38913844504) (Success) |
+| **M6: DevSecOps Security Gate**| Aqua Trivy scan, 0 HIGH/CRITICAL, enforced `--exit-code 1` | Trivy scan step, `.trivyignore` documented justifications | `submission-evidence/04-container-security/backend-scan.txt` |
+| **M7: Container Registry** | GHCR image publishing with commit SHA and latest tags | `ghcr.io/neerasa-veda-varshit/taskboard-*` | Run #13 publication logs |
 | **M8: Infrastructure as Code** | Terraform AWS VPC & EKS with provider lock and examples | `terraform/` (`main.tf`, `versions.tf`, `terraform.tfvars.example`) | `terraform fmt -check`, `terraform validate` |
-| **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/` (`values-prod.yaml`, `templates/`) | `helm lint`, `helm template` |
-| **M10: Observability** | Prometheus `/metrics` endpoint and ServiceMonitor | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `curl http://localhost:8000/metrics` |
+| **M9: Kubernetes Deployment** | Helm chart, Ingress, 2 replicas, ClusterIP, HPA | `helm/taskboard/`, `troubleshooting/`, `scripts/` | `submission-evidence/06-kubernetes/` |
+| **M10: Observability** | Prometheus `/metrics` endpoint, ServiceMonitor, Grafana | `prometheus_fastapi_instrumentator`, `servicemonitor.yaml` | `submission-evidence/07-monitoring/metrics_sample.txt` |
 
 ---
 
-## 🏆 11. Final Verification & Demo Sequence
+## 🏆 14. Final Verification & Demo Sequence
 
 1. **Clean Clone Test:**
    ```bash
@@ -305,3 +414,5 @@ helm template taskboard final-devops-project/helm/taskboard -f final-devops-proj
 3. **Verify CI/CD & Security Gate:**
    - Review [GitHub Actions Workflow Run](https://github.com/NEERASA-VEDA-VARSHIT/Devops/actions/workflows/devsecops-ci-cd.yml).
    - Confirm all three jobs (`Backend Tests & Frontend Build`, `Docker Build, Trivy Security Scan & GHCR Push`, `Helm Chart Validation & Kubernetes Deployment`) pass with `conclusion: success`.
+4. **Demonstrate Kubernetes Troubleshooting & Autoscaling:**
+   - Follow the detailed walkthrough in [submission-evidence/08-final-demo/demo_guide.txt](submission-evidence/08-final-demo/demo_guide.txt).

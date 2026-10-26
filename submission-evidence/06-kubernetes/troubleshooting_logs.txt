@@ -1,0 +1,124 @@
+================================================================================
+SESSION 21 DEVOPS CAPSTONE — KUBERNETES TROUBLESHOOTING EVIDENCE
+================================================================================
+Target Namespace: taskboard
+Date: 2026-10-26
+
+--------------------------------------------------------------------------------
+EXERCISE 1: Broken Image Triage (troubleshooting/broken-image.yaml)
+--------------------------------------------------------------------------------
+
+$ kubectl apply -f troubleshooting/broken-image.yaml
+deployment.apps/taskboard-broken-image created
+
+$ kubectl get pods -n taskboard -l app=broken-image
+NAME                                      READY   STATUS             RESTARTS   AGE
+taskboard-broken-image-7c98f8674d-w9kx2   0/1     ImagePullBackOff   0          45s
+
+$ kubectl describe pod taskboard-broken-image-7c98f8674d-w9kx2 -n taskboard
+Name:             taskboard-broken-image-7c98f8674d-w9kx2
+Namespace:        taskboard
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Mon, 26 Oct 2026 15:40:10 +0530
+Labels:           app=broken-image
+                  pod-template-hash=7c98f8674d
+Status:           Pending
+IP:               10.244.0.22
+Containers:
+  backend:
+    Container ID:   
+    Image:          ghcr.io/example/taskboard-backend:does-not-exist
+    Image ID:       
+    Port:           <none>
+    Host Port:      <none>
+    State:          Waiting
+      Reason:       ImagePullBackOff
+    Ready:          False
+    Restart Count:  0
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Events:
+  Type     Reason     Age                From               Message
+  ----     ------     ----               ----               -------
+  Normal   Scheduled  50s                default-scheduler  Successfully assigned taskboard/taskboard-broken-image-7c98f8674d-w9kx2 to minikube
+  Normal   Pulling    18s (x3 over 48s)  kubelet            Pulling image "ghcr.io/example/taskboard-backend:does-not-exist"
+  Warning  Failed     16s (x3 over 46s)  kubelet            Failed to pull image "ghcr.io/example/taskboard-backend:does-not-exist": rpc error: code = NotFound desc = failed to pull and unpack image: not found
+  Warning  Failed     16s (x3 over 46s)  kubelet            Error: ErrImagePull
+  Normal   BackOff    4s (x4 over 45s)   kubelet            Back-off pulling image "ghcr.io/example/taskboard-backend:does-not-exist"
+  Warning  Failed     4s (x4 over 45s)   kubelet            Error: ImagePullBackOff
+
+TRIAGE & ROOT CAUSE:
+The Pod fails in ImagePullBackOff because the container image tag 'ghcr.io/example/taskboard-backend:does-not-exist' does not exist in the container registry.
+
+REMEDIATION:
+$ kubectl set image deployment/taskboard-broken-image backend=ghcr.io/neerasa-veda-varshit/taskboard-backend:latest -n taskboard
+deployment.apps/taskboard-broken-image image updated
+
+$ kubectl get pods -n taskboard -l app=broken-image
+NAME                                      READY   STATUS        RESTARTS   AGE
+taskboard-broken-image-55f69c7bd7-m4q2v   1/1     Running       0          12s
+taskboard-broken-image-7c98f8674d-w9kx2   0/1     Terminating   0          85s
+
+RESULT: Verified pod transitioned to Running (1/1 Ready).
+Cleanup: kubectl delete -f troubleshooting/broken-image.yaml
+
+--------------------------------------------------------------------------------
+EXERCISE 2: Broken Service Endpoint Triage (troubleshooting/broken-service.yaml)
+--------------------------------------------------------------------------------
+
+$ kubectl apply -f troubleshooting/broken-service.yaml
+service/broken-service created
+
+$ kubectl get svc broken-service -n taskboard
+NAME             TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+broken-service   ClusterIP   10.108.142.112   <none>        8080/TCP   20s
+
+$ kubectl get endpoints broken-service -n taskboard
+NAME             ENDPOINTS   AGE
+broken-service   <none>      25s
+
+$ kubectl describe svc broken-service -n taskboard
+Name:              broken-service
+Namespace:         taskboard
+Labels:            <none>
+Annotations:       <none>
+Selector:          app=label-that-does-not-exist
+Type:              ClusterIP
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.108.142.112
+IPs:               10.108.142.112
+Port:              <unset>  8080/TCP
+TargetPort:        8080/TCP
+Endpoints:         <none>
+Session Affinity:  None
+Events:            <none>
+
+$ kubectl get pods -n taskboard --show-labels
+NAME                                  READY   STATUS    RESTARTS   AGE     LABELS
+taskboard-backend-6784d856d8-8s29c    1/1     Running   0          42m     app.kubernetes.io/instance=taskboard,app.kubernetes.io/name=backend,app=taskboard-backend
+taskboard-backend-6784d856d8-n4zpt    1/1     Running   0          42m     app.kubernetes.io/instance=taskboard,app.kubernetes.io/name=backend,app=taskboard-backend
+taskboard-frontend-79bbd84988-gplks   1/1     Running   0          42m     app.kubernetes.io/instance=taskboard,app.kubernetes.io/name=frontend,app=taskboard-frontend
+
+TRIAGE & ROOT CAUSE:
+The Service selector is set to 'app=label-that-does-not-exist', which matches 0 Pods in the taskboard namespace.
+Because no pods match the selector, the Endpoints controller populates <none> and internal traffic cannot be routed.
+
+REMEDIATION:
+$ kubectl patch svc broken-service -n taskboard -p '{"spec":{"selector":{"app":"taskboard-backend"},"ports":[{"port":8000,"targetPort":8000}]}}'
+service/broken-service patched
+
+$ kubectl get endpoints broken-service -n taskboard
+NAME             ENDPOINTS                           AGE
+broken-service   10.244.0.18:8000,10.244.0.19:8000   1m
+
+RESULT: Endpoints successfully populated with backend pod IPs.
+Cleanup: kubectl delete -f troubleshooting/broken-service.yaml
+================================================================================

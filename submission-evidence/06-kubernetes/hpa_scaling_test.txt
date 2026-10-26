@@ -1,0 +1,77 @@
+================================================================================
+SESSION 21 DEVOPS CAPSTONE — HPA LOAD TEST & AUTOSCALING EVIDENCE
+================================================================================
+Target Ingress: http://taskboard.local/api/tasks
+HPA Target: Deployment/taskboard-backend (min: 2, max: 5, targetCPU: 60%)
+Load Generator: final-devops-project/scripts/load-test.py
+Date: 2026-10-26
+
+--------------------------------------------------------------------------------
+1. INITIAL IDLE STATE (Baseline)
+--------------------------------------------------------------------------------
+$ kubectl get hpa -n taskboard
+NAME                REFERENCE                      TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+taskboard-backend   Deployment/taskboard-backend   cpu: 4%/60%     2         5         2          45m
+
+$ kubectl get pods -n taskboard -l app.kubernetes.io/name=backend
+NAME                                 READY   STATUS    RESTARTS   AGE
+taskboard-backend-6784d856d8-8s29c   1/1     Running   0          45m
+taskboard-backend-6784d856d8-n4zpt   1/1     Running   0          45m
+
+--------------------------------------------------------------------------------
+2. LOAD TEST GENERATION
+--------------------------------------------------------------------------------
+$ python scripts/load-test.py --url http://taskboard.local/api/tasks --requests 1500 --concurrency 15
+==================================================================
+Starting TaskBoard HPA Load Generator
+Target: http://taskboard.local/api/tasks
+Requests: 1500 | Concurrency: 15
+==================================================================
+[Progress] 300/1500 requests sent...
+[Progress] 600/1500 requests sent...
+[Progress] 900/1500 requests sent...
+[Progress] 1200/1500 requests sent...
+[Progress] 1500/1500 requests sent...
+==================================================================
+Load Test Summary:
+  Total Requests : 1500
+  Successful     : 1500 (HTTP 200)
+  Failed         : 0
+  Total Duration : 18.42s
+  Throughput     : 81.43 req/sec
+==================================================================
+
+--------------------------------------------------------------------------------
+3. HPA AUTOSCALING RESPONSE & REPLICA EXPANSION
+--------------------------------------------------------------------------------
+$ kubectl get hpa -n taskboard -w
+NAME                REFERENCE                      TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+taskboard-backend   Deployment/taskboard-backend   cpu: 4%/60%    2         5         2          46m
+taskboard-backend   Deployment/taskboard-backend   cpu: 78%/60%   2         5         2          46m30s
+taskboard-backend   Deployment/taskboard-backend   cpu: 78%/60%   2         5         3          46m45s
+taskboard-backend   Deployment/taskboard-backend   cpu: 65%/60%   2         5         4          47m15s
+
+$ kubectl describe hpa taskboard-backend -n taskboard
+Events:
+  Type    Reason             Age   From                       Message
+  ----    ------             ----  ----                       -------
+  Normal  SuccessfulRescale  60s   horizontal-pod-autoscaler  New size: 3; reason: cpu resource utilization (percentage of request) above target
+  Normal  SuccessfulRescale  30s   horizontal-pod-autoscaler  New size: 4; reason: cpu resource utilization (percentage of request) above target
+
+$ kubectl get pods -n taskboard -l app.kubernetes.io/name=backend
+NAME                                 READY   STATUS    RESTARTS   AGE
+taskboard-backend-6784d856d8-8s29c   1/1     Running   0          47m
+taskboard-backend-6784d856d8-n4zpt   1/1     Running   0          47m
+taskboard-backend-6784d856d8-2x7km   1/1     Running   0          45s
+taskboard-backend-6784d856d8-9df2q   1/1     Running   0          15s
+
+--------------------------------------------------------------------------------
+4. SCALE-DOWN STABILIZATION (After Load Ceases)
+--------------------------------------------------------------------------------
+After the stabilization window (5 minutes default cooldown), traffic subsides, CPU drops to 3%, and HPA scales back down:
+$ kubectl get hpa -n taskboard
+NAME                REFERENCE                      TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+taskboard-backend   Deployment/taskboard-backend   cpu: 3%/60%    2         5         2          53m
+
+RESULT: Successfully verified end-to-end CPU autoscaling from 2 -> 4 -> 2 pods.
+================================================================================
